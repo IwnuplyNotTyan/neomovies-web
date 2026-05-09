@@ -28,7 +28,9 @@ function saveImageCache(cache: ImageUrlsByKpId): void {
   }
 }
 
-function getOrFallbackUrl(kpId: string, urls: string[], state: ImageLoadState): string {
+type ImageLoadState = 'loading' | 'loaded' | 'error'
+
+function getOrFallbackUrl(urls: string[], state: ImageLoadState): string {
   if (state === 'error' || urls.length === 0) {
   }
   return urls[0]
@@ -41,7 +43,7 @@ function getKpId(movie: Movie): string | null {
 }
 
 function isTvShow(movie: Movie): boolean {
-  return movie.type === 'tv' || movie.media_type === 'tv' || (!movie.type && !movie.media_type && movie.first_air_date && !movie.release_date)
+  return movie.type === 'tv' || movie.media_type === 'tv' || Boolean(!movie.type && !movie.media_type && movie.first_air_date && !movie.release_date)
 }
 
 function getImageUrls(movie: Movie, kpId: string): string[] {
@@ -58,8 +60,6 @@ function getImageUrls(movie: Movie, kpId: string): string[] {
     `${API_BASE_URL}/api/v1/images/kp_small/${kpId}`
   ]
 }
-
-type ImageLoadState = 'loading' | 'loaded' | 'error'
 
 function ChevronLeft() {
   return (
@@ -127,7 +127,7 @@ export function RecentlyViewedRow({ movies }: Props) {
       const tryLoadWithFallback = (urls: string[], index: number = 0) => {
         if (index >= urls.length) {
           setImageUrls((prev) => {
-            const next = { ...prev, [kpId]: { urls: [], state: 'error' } }
+            const next: ImageUrlsByKpId = { ...prev, [kpId]: { urls: [], state: 'error' as ImageLoadState } }
             imageUrlsRef.current = next
             saveImageCache(next)
             return next
@@ -138,14 +138,14 @@ export function RecentlyViewedRow({ movies }: Props) {
         const currentUrl = urls[index]
         setImageUrls((prev) => {
           imageUrlsRef.current = prev
-          return { ...prev, [kpId]: { urls: [currentUrl], state: 'loading' } }
+          return { ...prev, [kpId]: { urls: [currentUrl], state: 'loading' as ImageLoadState } }
         })
 
         const img = new Image()
         img.src = currentUrl
         img.onload = () => {
           setImageUrls((prev) => {
-            const next = { ...prev, [kpId]: { urls: [currentUrl], state: 'loaded' } }
+            const next: ImageUrlsByKpId = { ...prev, [kpId]: { urls: [currentUrl], state: 'loaded' as ImageLoadState } }
             imageUrlsRef.current = next
             saveImageCache(next)
             return next
@@ -293,7 +293,7 @@ export function RecentlyViewedRow({ movies }: Props) {
           const imageData = imageUrls[kpId]
           const urls = imageData?.urls || []
           const loadState = imageData?.state || 'loading'
-          const imageUrl = getOrFallbackUrl(kpId, urls, loadState)
+          const imageUrl = getOrFallbackUrl(urls, loadState)
           const isTv = isTvShow(movie)
           const key = `${kpId}-${isTv ? 'tv' : 'movie'}`
           const isFavorite = favorites.has(kpId)
