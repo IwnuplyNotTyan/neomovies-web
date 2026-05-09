@@ -10,6 +10,7 @@ import { HiOutlineUser } from 'react-icons/hi2'
 import { HiOutlineMagnifyingGlass } from 'react-icons/hi2'
 import { FaGithub, FaTelegramPlane } from 'react-icons/fa'
 import { HiOutlineDocumentText, HiOutlineDevicePhoneMobile, HiOutlineTv, HiOutlineMoon, HiOutlineSun } from 'react-icons/hi2'
+import { ProfileModal } from './ProfileModal'
 
 type Props = { children: React.ReactNode }
 const KEY = 'neo_search_history_v1'
@@ -51,6 +52,7 @@ export function Layout({ children }: Props) {
   const [searchExpanded, setSearchExpanded] = useState(false)
   const [searchResults, setSearchResults] = useState<Movie[]>([])
   const [searchLoading, setSearchLoading] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     const stored = localStorage.getItem(THEME_KEY)
     return stored === 'light' ? 'light' : 'dark'
@@ -71,12 +73,18 @@ export function Layout({ children }: Props) {
     return () => window.removeEventListener('auth-changed', syncUser)
   }, [])
 
-  const commitSearch = (value: string) => {
+  const saveSearchQuery = (value: string) => {
     const q = value.trim()
     if (!q) return
     const next = [q, ...history.filter((i) => i !== q)].slice(0, 12)
     setHistory(next)
     localStorage.setItem(KEY, JSON.stringify(next))
+  }
+
+  const commitSearch = (value: string) => {
+    const q = value.trim()
+    if (!q) return
+    saveSearchQuery(q)
     navigate(`/search?q=${encodeURIComponent(q)}`)
   }
 
@@ -163,6 +171,7 @@ export function Layout({ children }: Props) {
 
   const openMovie = (movie: Movie) => {
     const id = movie.kinopoisk_id ? `kp_${movie.kinopoisk_id}` : movie.id
+    if (query.trim()) saveSearchQuery(query)
     navigate(`/${id}`)
     setSearchExpanded(false)
   }
@@ -223,7 +232,7 @@ export function Layout({ children }: Props) {
                 onChange={(e) => setQuery(e.target.value)}
                 onFocus={() => setSearchExpanded(true)}
                 placeholder="Поиск фильмов и сериалов"
-                className="w-full bg-transparent text-sm text-zinc-100 outline-none placeholder:text-zinc-500"
+                className="search-input w-full bg-transparent text-sm text-zinc-100 outline-none placeholder:text-zinc-500"
               />
               {showSearchPanel ? (
                 <div
@@ -284,7 +293,7 @@ export function Layout({ children }: Props) {
           {/* User */}
           <button
             className="navbar-user ml-1 flex shrink-0 items-center gap-2 rounded-full bg-white/[0.04] px-3.5 py-2 text-sm text-zinc-200 transition hover:bg-white/[0.06]"
-            onClick={() => navigate(avatar || userName !== 'Вход' ? '/profile' : '/auth')}
+            onClick={() => (avatar || userName !== 'Вход' ? setProfileOpen(true) : navigate('/auth'))}
           >
             {avatar ? (
               <img src={avatar} className="h-6 w-6 rounded-full object-cover" alt="" />
@@ -297,6 +306,7 @@ export function Layout({ children }: Props) {
       </header>
 
       <main className="mx-auto max-w-[1400px] space-y-10 px-6 py-6">{children}</main>
+      <ProfileModal open={profileOpen} onOpenChange={setProfileOpen} />
       <footer className="mx-auto mt-4 max-w-[1400px] px-6 pb-10">
         <div className="app-footer-shell grid gap-4 rounded-[24px] border border-white/8 bg-white/[0.03] px-5 py-4 text-sm text-zinc-500 lg:grid-cols-[1fr_auto_auto_auto] lg:items-center">
           <div className="flex min-w-0 items-center gap-3">

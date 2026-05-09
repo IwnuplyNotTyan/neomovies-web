@@ -1,13 +1,36 @@
-FROM node:23-alpine
+# syntax=docker/dockerfile:1.7
 
-RUN apk add --no-cache git
-
+FROM node:22-alpine AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
 WORKDIR /app
 
-RUN git clone https://gitlab.com/foxixus/neomovies-web .
+FROM base AS deps
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml turbo.json ./
+COPY apps ./apps
+COPY packages ./packages
+RUN pnpm install --frozen-lockfile
 
-RUN npm install
+FROM deps AS build
+ARG APP_NAME=web-desktop
+RUN test -n "$APP_NAME"
+RUN pnpm --filter ${APP_NAME} build
 
-EXPOSE 4173
+FROM nginx:1.27-alpine AS runtime
+ARG APP_NAME=web-desktop
+COPY --from=build /app/apps/${APP_NAME}/dist /usr/share/nginx/html
+RUN cat > /etc/nginx/conf.d/default.conf <<'NGINX'
+server {
+  listen 80;
+  server_name _;
+  root /usr/share/nginx/html;
+  index index.html;
 
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+  location / {
+    try_files $uri $uri/ /index.html;
+  }
+}
+NGINX
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]

@@ -69,6 +69,15 @@ function getDescription(movie: Movie) {
   return movie.overview || movie.description || 'Описание недоступно'
 }
 
+
+function resolveMediaType(movie: Movie): 'movie' | 'tv' {
+  if (movie.type === 'tv' || movie.media_type === 'tv') return 'tv'
+  if (movie.type === 'movie' || movie.media_type === 'movie') return 'movie'
+  if (movie.first_air_date && !movie.release_date) return 'tv'
+  if (movie.name && !movie.title) return 'tv'
+  return 'movie'
+}
+
 const PLAYER_LABELS: Record<PlayerKey, string> = {
   cdn: 'Плеер 1',
   alloha: 'Alloha',
@@ -96,7 +105,7 @@ export const MovieDetails = () => {
   useEffect(() => {
     if (!movie) return
 
-    const mediaType = movie.type === 'tv' || movie.media_type === 'tv' ? 'tv' : 'movie'
+    const mediaType = resolveMediaType(movie)
     const favoriteId = extractKpId(movie.externalIds?.kp || movie.kinopoisk_id || movie.id)
 
     const syncFavorite = () => {
@@ -219,7 +228,7 @@ export const MovieDetails = () => {
 
     try {
       setFavoriteUpdating(true)
-      const mediaType = movie.type === 'tv' || movie.media_type === 'tv' ? 'tv' : 'movie'
+      const mediaType = resolveMediaType(movie)
       const movieId = extractKpId(movie.externalIds?.kp || movie.kinopoisk_id || movie.id)
       if (!movieId) return
 
@@ -249,7 +258,7 @@ export const MovieDetails = () => {
   const description = useMemo(() => (movie ? getDescription(movie) : ''), [movie])
   const posterPath = movie ? getImageUrl(movie.poster_path || movie.posterUrlPreview || movie.posterUrl) : ''
   const genres = movie?.genres || []
-  const isTv = movie?.type === 'tv' || movie?.media_type === 'tv'
+  const isTv = movie ? resolveMediaType(movie) === 'tv' : false
 
   if (loading) {
     return (
@@ -319,7 +328,7 @@ export const MovieDetails = () => {
               type="button"
               onClick={handleFavoriteClick}
               disabled={!isLoggedIn || favoriteUpdating}
-              className={`grid h-12 w-12 place-items-center rounded-full border border-white/12 bg-white/[0.08] text-white shadow-[0_8px_18px_rgba(0,0,0,0.22)] backdrop-blur-md transition ${
+              className={`details-bookmark-btn grid h-12 w-12 place-items-center rounded-full border border-white/12 bg-white/[0.08] text-white shadow-[0_8px_18px_rgba(0,0,0,0.22)] backdrop-blur-md transition ${
                 isFavorite ? 'border-[#d8d0a8]/45 bg-[#e7d9a5]/22 text-[#efe2b0]' : 'hover:bg-white/[0.12]'
               } ${!isLoggedIn ? 'opacity-60' : ''}`}
               aria-label={isFavorite ? 'Убрать из избранного' : 'Добавить в избранное'}

@@ -169,7 +169,7 @@ export const TorrentSelector = ({ kpId, type, title }: TorrentSelectorProps) => 
 
       {open ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 px-4 py-8 backdrop-blur-sm">
-          <div className="w-full max-w-3xl rounded-[28px] border border-white/8 bg-[linear-gradient(180deg,rgba(15,18,25,0.96),rgba(10,12,18,0.94))] p-5 shadow-[0_24px_64px_rgba(0,0,0,0.36)]">
+          <div className="torrent-modal w-full max-w-3xl rounded-[28px] border border-white/8 bg-[linear-gradient(180deg,rgba(15,18,25,0.96),rgba(10,12,18,0.94))] p-5 shadow-[0_24px_64px_rgba(0,0,0,0.36)]">
             <div className="mb-4 flex items-start justify-between gap-4">
               <div className="space-y-1">
                 <div className="text-xl font-bold text-white">
@@ -182,7 +182,7 @@ export const TorrentSelector = ({ kpId, type, title }: TorrentSelectorProps) => 
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-zinc-300 transition hover:bg-white/[0.07] hover:text-white"
+                className="torrent-close-btn grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-zinc-300 transition hover:bg-white/[0.07] hover:text-white"
                 aria-label="Закрыть"
               >
                 <CloseIcon />
@@ -251,7 +251,7 @@ export const TorrentSelector = ({ kpId, type, title }: TorrentSelectorProps) => 
                   {filteredTorrents.map((torrent, idx) => (
                     <div
                       key={`${torrent.magnet}-${idx}`}
-                      className="rounded-[22px] border border-white/8 bg-white/[0.03] p-4"
+                      className="torrent-item rounded-[22px] border border-white/8 bg-white/[0.03] p-4"
                     >
                       <div className="space-y-4">
                         <div className="min-w-0 space-y-2">

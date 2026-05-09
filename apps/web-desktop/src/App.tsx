@@ -8,7 +8,6 @@ const MoviesTop = lazy(() => import('./pages/MoviesTop').then((m) => ({ default:
 const TVTop = lazy(() => import('./pages/TVTop').then((m) => ({ default: m.TVTop })))
 const Favorites = lazy(() => import('./pages/Favorites').then((m) => ({ default: m.Favorites })))
 const Search = lazy(() => import('./pages/Search').then((m) => ({ default: m.Search })))
-const Profile = lazy(() => import('./pages/Profile').then((m) => ({ default: m.Profile })))
 const MovieDetails = lazy(() => import('./pages/MovieDetails').then((m) => ({ default: m.MovieDetails })))
 const NeoIDAuth = lazy(() => import('./pages/NeoIDAuth').then((m) => ({ default: m.NeoIDAuth })))
 const NeoIDCallback = lazy(() => import('./pages/NeoIDCallback').then((m) => ({ default: m.NeoIDCallback })))
@@ -57,7 +56,6 @@ export default function App() {
             <Route path="/tv-top" element={<TVTop />} />
             <Route path="/favorites" element={<Favorites />} />
             <Route path="/search" element={<SearchRoute Search={Search} />} />
-            <Route path="/profile" element={<Profile />} />
             <Route path="/:id" element={<MovieDetails />} />
           </Route>
           <Route path="/auth" element={<NeoIDAuth />} />

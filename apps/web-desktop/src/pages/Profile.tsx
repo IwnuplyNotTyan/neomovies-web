@@ -21,33 +21,6 @@ interface UserProfile {
   created_at?: string
 }
 
-type ContinueItem = {
-  id: string
-  progress: number
-  updatedAt: string
-}
-
-const CONTINUE_KEY = 'neo_continue_watching_v1'
-
-function readContinueWatching(): ContinueItem[] {
-  try {
-    return JSON.parse(localStorage.getItem(CONTINUE_KEY) || '[]') as ContinueItem[]
-  } catch {
-    return []
-  }
-}
-
-function formatDate(value?: string) {
-  if (!value) return '—'
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return '—'
-  return new Intl.DateTimeFormat('ru-RU', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-  }).format(date)
-}
-
 function compactNeoId(value?: string) {
   if (!value) return '—'
   if (value.length <= 22) return value
@@ -111,7 +84,6 @@ export const Profile = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [favoritesCount, setFavoritesCount] = useState(0)
-  const [continueCount, setContinueCount] = useState(0)
 
   const isLoggedIn = useMemo(() => Boolean(localStorage.getItem('token')), [])
 
@@ -138,7 +110,6 @@ export const Profile = () => {
         const user = profileResp.data as UserProfile
         setProfile(user)
         setFavoritesCount(favorites.length)
-        setContinueCount(readContinueWatching().length)
 
         if (user.name) localStorage.setItem('userName', user.name)
         if (user.email) localStorage.setItem('userEmail', user.email)
@@ -152,7 +123,6 @@ export const Profile = () => {
           email: localStorage.getItem('userEmail') || '',
           avatar: localStorage.getItem('userAvatar') || '',
         })
-        setContinueCount(readContinueWatching().length)
       } finally {
         if (!cancelled) setLoading(false)
       }
