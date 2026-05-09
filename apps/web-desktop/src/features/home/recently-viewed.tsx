@@ -8,7 +8,7 @@ type Props = {
   movies: Movie[]
 }
 
-type ImageUrlsByKpId = Record<string, string[]>
+type ImageUrlsByKpId = Record<string, { urls: string[]; state: ImageLoadState }>
 
 const IMAGE_CACHE_KEY = 'neo_recently_viewed_images_v1'
 
@@ -28,6 +28,12 @@ function saveImageCache(cache: ImageUrlsByKpId): void {
   }
 }
 
+function getOrFallbackUrl(kpId: string, urls: string[], state: ImageLoadState): string {
+  if (state === 'error' || urls.length === 0) {
+  }
+  return urls[0]
+}
+
 function getKpId(movie: Movie): string | null {
   if (movie.kinopoisk_id) return String(movie.kinopoisk_id)
   const idStr = String(movie.id)
@@ -40,10 +46,20 @@ function isTvShow(movie: Movie): boolean {
 
 function getImageUrls(movie: Movie, kpId: string): string[] {
   if (isTvShow(movie)) {
-    return Array.from({ length: 4 }, (_, i) => `${API_BASE_URL}/api/v1/images/screens/${kpId}/1/${i + 1}/medium`)
+    return [
+      `${API_BASE_URL}/api/v1/images/backdrops/page/${kpId}/medium`,
+      `${API_BASE_URL}/api/v1/images/screens/${kpId}/1/1/medium`,
+    ]
   }
-  return Array.from({ length: 4 }, (_, i) => `${API_BASE_URL}/api/v1/images/backdrops/${kpId}/medium`)
+  return [
+    `${API_BASE_URL}/api/v1/images/backdrops/page/${kpId}/medium`,
+    `${API_BASE_URL}/api/v1/images/backdrops/${kpId}/medium`,
+    `${API_BASE_URL}/api/v1/images/kp/${kpId}`,
+    `${API_BASE_URL}/api/v1/images/kp_small/${kpId}`
+  ]
 }
+
+type ImageLoadState = 'loading' | 'loaded' | 'error'
 
 function ChevronLeft() {
   return (
@@ -79,6 +95,7 @@ export function RecentlyViewedRow({ movies }: Props) {
   const navigate = useNavigate()
   const scrollRef = useRef<HTMLDivElement>(null)
   const [imageUrls, setImageUrls] = useState<ImageUrlsByKpId>(() => loadImageCache())
+  const imageUrlsRef = useRef(imageUrls)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
   const [favorites, setFavorites] = useState<Set<string>>(() => new Set())
@@ -89,25 +106,49 @@ export function RecentlyViewedRow({ movies }: Props) {
   useEffect(() => {
     movies.forEach((movie) => {
       const kpId = getKpId(movie)
-      if (!kpId || imageUrls[kpId]) return
+      if (!kpId) return
 
-      const urls = getImageUrls(movie, kpId)
-      if (urls.length > 0) {
+      const existing = imageUrlsRef.current[kpId]
+      if (existing?.state === 'loaded' || existing?.state === 'loading') return
+
+      const tryLoadWithFallback = (urls: string[], index: number = 0) => {
+        if (index >= urls.length) {
+          setImageUrls((prev) => {
+            const next = { ...prev, [kpId]: { urls: [], state: 'error' } }
+            imageUrlsRef.current = next
+            saveImageCache(next)
+            return next
+          })
+          return
+        }
+
+        const currentUrl = urls[index]
+        setImageUrls((prev) => {
+          imageUrlsRef.current = prev
+          return { ...prev, [kpId]: { urls: [currentUrl], state: 'loading' } }
+        })
+
         const img = new Image()
-        img.src = urls[0]
+        img.src = currentUrl
         img.onload = () => {
           setImageUrls((prev) => {
-            const next = { ...prev, [kpId]: urls }
+            const next = { ...prev, [kpId]: { urls: [currentUrl], state: 'loaded' } }
+            imageUrlsRef.current = next
             saveImageCache(next)
             return next
           })
         }
         img.onerror = () => {
-          // don't cache failed loads
+          tryLoadWithFallback(urls, index + 1)
         }
       }
+
+      const urls = getImageUrls(movie, kpId)
+      if (urls.length > 0) {
+        tryLoadWithFallback(urls)
+      }
     })
-  }, [movies, imageUrls])
+  }, [movies])
 
   useEffect(() => {
     movies.forEach((movie) => {
@@ -236,7 +277,10 @@ export function RecentlyViewedRow({ movies }: Props) {
         {movies.map((movie) => {
           const kpId = getKpId(movie)
           if (!kpId) return null
-          const urls = imageUrls[kpId] || []
+          const imageData = imageUrls[kpId]
+          const urls = imageData?.urls || []
+          const loadState = imageData?.state || 'loading'
+          const imageUrl = getOrFallbackUrl(kpId, urls, loadState)
           const isTv = isTvShow(movie)
           const key = `${kpId}-${isTv ? 'tv' : 'movie'}`
           const isFavorite = favorites.has(kpId)
@@ -249,18 +293,12 @@ export function RecentlyViewedRow({ movies }: Props) {
               onClick={() => navigate(`/${kpId}`)}
             >
               <div className="relative h-[214px] overflow-hidden rounded-b-[18px]">
-                {urls.length > 0 ? (
-                  <img
-                    src={urls[0]}
-                    alt={movie.title || movie.nameRu || movie.nameEn || ''}
-                    className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.025]"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-zinc-900 text-zinc-500">
-                    Загрузка...
-                  </div>
-                )}
+                <img
+                  src={imageUrl}
+                  alt={movie.title || movie.nameRu || movie.nameEn || ''}
+                  className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.025]"
+                  loading="lazy"
+                />
                 <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/70 to-transparent" />
                 <button
                   type="button"
