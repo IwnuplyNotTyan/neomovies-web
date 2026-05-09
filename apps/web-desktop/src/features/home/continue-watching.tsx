@@ -18,7 +18,7 @@ export function ContinueWatchingRow({ profileReady, items }: Props) {
 
   return (
     <section className="space-y-3">
-      <h2 className="text-xl font-bold text-zinc-100">Продолжить просмотр</h2>
+      <h2 className="row-heading text-[30px] font-black tracking-[-0.04em] text-white">Продолжить просмотр</h2>
       <div className="flex gap-4 overflow-x-auto pb-2">
         {items.map((item) => (
           <div key={item.id} className="space-y-2">

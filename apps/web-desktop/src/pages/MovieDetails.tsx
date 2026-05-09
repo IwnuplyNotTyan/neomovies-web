@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { favoritesAPI, getImageUrl, moviesAPI, playersAPI } from '../api'
+import { recentlyViewedCache } from '../api/recentlyViewedCache'
 import { TorrentSelector } from '../components/TorrentSelector'
 import type { Movie } from '../types'
 
@@ -118,6 +119,11 @@ export const MovieDetails = () => {
     })
 
     return () => unsubscribe()
+  }, [movie])
+
+  useEffect(() => {
+    if (!movie) return
+    recentlyViewedCache.add(movie)
   }, [movie])
 
   useEffect(() => {

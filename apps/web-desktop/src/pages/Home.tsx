@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { moviesAPI, tvAPI } from '../api'
+import { recentlyViewedCache } from '../api/recentlyViewedCache'
 import type { Movie } from '../types'
 import { MoviePosterCard } from '../features/shared/movie-card'
 import { ContinueWatchingRow } from '../features/home/continue-watching'
+import { RecentlyViewedRow } from '../features/home/recently-viewed'
 
 type ContinueItem = { id: string; movie: Movie; progress: number; updatedAt: string }
 
@@ -151,6 +153,7 @@ export const Home = () => {
   const [popular, setPopular] = useState<Movie[]>(() => readMovieCache(POPULAR_KEY))
   const [topMovies, setTopMovies] = useState<Movie[]>(() => readMovieCache(TOP_MOVIES_KEY))
   const [topSeries, setTopSeries] = useState<Movie[]>(() => readMovieCache(TOP_SERIES_KEY))
+  const [recentlyViewed] = useState<Movie[]>(() => recentlyViewedCache.get())
   const [loadingPopular, setLoadingPopular] = useState(popular.length === 0)
   const [loadingTop, setLoadingTop] = useState(topMovies.length === 0)
   const [loadingSeries, setLoadingSeries] = useState(topSeries.length === 0)
@@ -189,6 +192,7 @@ export const Home = () => {
 
   return (
     <div className="space-y-10">
+      <RecentlyViewedRow movies={recentlyViewed} />
       <ContinueWatchingRow profileReady={hasProfile} items={continueItems} />
 
       <MovieRow title="Популярное" movies={popular} loading={loadingPopular} onSeeAll={() => navigate('/movies')} />
