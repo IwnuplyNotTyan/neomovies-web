@@ -91,6 +91,19 @@ function BookmarkIcon({ active }: { active: boolean }) {
   )
 }
 
+function StarIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5">
+      <path d="M12 3.75l2.53 5.13 5.66.83-4.1 4 1 5.64L12 16.68l-5.09 2.67 1-5.64-4.1-4 5.66-.83L12 3.75z" />
+    </svg>
+  )
+}
+
+function getRating(movie: Movie): number {
+  const value = movie.rating ?? movie.vote_average ?? movie.ratingKinopoisk ?? 0
+  return Number(value) || 0
+}
+
 export function RecentlyViewedRow({ movies }: Props) {
   const navigate = useNavigate()
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -285,6 +298,7 @@ export function RecentlyViewedRow({ movies }: Props) {
           const key = `${kpId}-${isTv ? 'tv' : 'movie'}`
           const isFavorite = favorites.has(kpId)
           const isUpdating = updatingIds.has(key)
+          const rating = getRating(movie)
           
           return (
             <article
@@ -312,13 +326,21 @@ export function RecentlyViewedRow({ movies }: Props) {
                   <BookmarkIcon active={isFavorite} />
                 </button>
               </div>
-              <div className="space-y-1 px-4 pb-4 pt-3">
+              <div className="space-y-2 px-4 pb-4 pt-3">
                 <h3 className="line-clamp-1 text-[16px] font-semibold leading-snug tracking-[-0.02em] text-zinc-100">
                   {movie.title || movie.nameRu || movie.nameEn || 'Untitled'}
                 </h3>
-                <p className="text-[13px] text-zinc-500">
-                  {isTv ? 'Сериал' : 'Фильм'} • {String(movie.year || movie.releaseDate || movie.release_date || '').slice(0, 4)}
-                </p>
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-[13px] text-zinc-500">
+                    {isTv ? 'Сериал' : 'Фильм'} • {String(movie.year || movie.releaseDate || movie.release_date || '').slice(0, 4)}
+                  </p>
+                  {rating > 0 ? (
+                    <span className="poster-card-rating inline-flex shrink-0 items-center gap-1 rounded-full border border-white/8 bg-white/[0.04] px-2.5 py-1 text-[12px] font-medium text-zinc-300">
+                      <StarIcon />
+                      {rating.toFixed(1)}
+                    </span>
+                  ) : null}
+                </div>
               </div>
             </article>
           )
