@@ -1,0 +1,11 @@
+@layer components {
+  .tv-rows {
+    @apply absolute top-[56%] right-0 left-32 z-[2] flex max-h-[42%] flex-col gap-5 overflow-y-auto pr-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden;
+  }
+  .tv-row-title {
+    @apply ml-1.5 text-[34px] font-semibold tracking-[0.01em] text-[rgba(244,246,250,0.94)];
+  }
+  .tv-track {
+    @apply flex gap-[18px] overflow-x-auto overflow-y-hidden px-0 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden;
+  }
+}

@@ -1,0 +1,45 @@
+@layer components {
+  .tv-card {
+    @apply relative w-[430px] overflow-hidden rounded-2xl border border-white/10 bg-[rgba(19,21,25,0.88)] shadow-[0_6px_14px_rgba(0,0,0,0.24)];
+  }
+  .tv-card-poster {
+    @apply w-[250px];
+  }
+  .tv-card-poster .tv-card-image {
+    @apply h-[330px];
+  }
+  .tv-card-active {
+    @apply border-[rgba(188,214,255,0.98)] ring-2 ring-[rgba(150,196,255,0.98)] ring-inset shadow-[0_0_0_1px_rgba(209,228,255,0.9),0_14px_30px_rgba(0,0,0,0.42)];
+  }
+  .tv-card-image {
+    @apply block h-[200px] w-full object-cover;
+    filter: contrast(1.02) saturate(0.95);
+  }
+  .tv-card-light {
+    @apply pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-white/8 to-transparent;
+  }
+  .tv-card-depth {
+    @apply pointer-events-none absolute inset-0 bg-gradient-to-t from-black/22 via-transparent to-transparent;
+  }
+  .tv-card-meta {
+    @apply flex min-h-[94px] flex-col gap-2 bg-gradient-to-b from-[rgba(15,17,21,0.84)] to-[rgba(14,16,20,0.96)] px-3.5 py-3;
+  }
+  .tv-card-title {
+    @apply line-clamp-2 min-h-[44px] text-[18px] leading-tight font-semibold text-[rgba(244,246,250,0.96)];
+  }
+  .tv-card-rating {
+    @apply inline-flex items-center gap-1.5 text-[14px] font-semibold text-[rgba(233,236,242,0.82)];
+  }
+  .tv-card-all {
+    @apply h-[305px] bg-[rgba(17,20,26,0.96)];
+  }
+  .tv-card-all-inner {
+    @apply flex h-full w-full flex-col justify-end rounded-2xl border border-white/8 bg-gradient-to-br from-white/[0.09] to-white/[0.02] px-8 pb-8;
+  }
+  .tv-card-all-title {
+    @apply text-[46px] font-semibold leading-none text-white/95;
+  }
+  .tv-card-all-subtitle {
+    @apply mt-3 text-[18px] text-white/62;
+  }
+}
