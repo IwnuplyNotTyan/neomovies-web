@@ -3,15 +3,10 @@ import { createApiClient } from '@neomovies/api-client'
 
 const env = (import.meta as any)?.env ?? {}
 const rawApiBase = (env.VITE_API_URL || env.VITE_API_BASE_URL) as string | undefined
-const apiBase = rawApiBase && rawApiBase.trim().length > 0 ? rawApiBase.trim().replace(/\/$/, '') : undefined
-const isDev = Boolean(env.DEV)
-const isLocalHost =
-  typeof window !== 'undefined' &&
-  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
 
-const resolvedBase =
-  apiBase ??
-  ((isDev || isLocalHost) ? 'http://localhost:3001' : 'https://api.neomovies.ru')
+const resolvedBase = rawApiBase && rawApiBase.trim().length > 0 
+  ? rawApiBase.trim().replace(/\/$/, '') 
+  : 'https://api.neomovies.ru'
 export const api = createApiClient(resolvedBase)
 export const apiBaseUrl = resolvedBase
 

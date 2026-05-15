@@ -1,0 +1,39 @@
+.row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+  position: relative;
+  z-index: 0;
+}
+
+.row:focus-within {
+  z-index: 2;
+}
+
+.row-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #fff;
+  padding-left: 28px;
+}
+
+.row-viewport {
+  overflow: hidden;
+  padding: 8px 0 12px;
+}
+
+.row-track {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 10px 28px 18px;
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.row-track::-webkit-scrollbar {
+  display: none;
+}

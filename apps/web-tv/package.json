@@ -4,26 +4,29 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --host",
-    "build": "tsc --noEmit && vite build",
-    "preview": "vite preview --host",
+    "dev": "node --disable-warning=DEP0205 ./node_modules/vite/bin/vite.js --host",
+    "build": "tsc --noEmit && node --disable-warning=DEP0205 ./node_modules/vite/bin/vite.js build",
+    "preview": "node --disable-warning=DEP0205 ./node_modules/vite/bin/vite.js preview --host",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.1",
-    "eslint": "^9.39.1",
-    "globals": "^16.5.0",
-    "lucide-solid": "^1.14.0",
-    "typescript": "^5.9.3",
-    "typescript-eslint": "^8.46.4",
-    "vite": "^6.3.5",
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.3.0",
+    "globals": "^17.6.0",
+    "lucide-solid": "^1.16.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.59.3",
+    "vite": "^8.0.13",
     "vite-plugin-solid": "^2.11.12"
   },
   "dependencies": {
     "@neomovies/api-client": "workspace:*",
     "@noriginmedia/norigin-spatial-navigation": "^3.1.0",
     "@noriginmedia/norigin-spatial-navigation-core": "^3.1.0",
-    "solid-js": "^1.9.12"
+    "axios": "^1.16.1",
+    "solid-js": "^1.9.12",
+    "spatial-navigation-js": "^1.0.0",
+    "zod": "^4.4.3"
   }
 }
