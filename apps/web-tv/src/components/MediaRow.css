@@ -1,0 +1,40 @@
+.row {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.row-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+  padding: 0 40px 0 132px;
+}
+
+.row-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.row-viewport {
+  /* clip only horizontally, leave vertical space for focus rings */
+  overflow: visible;
+  /* clip-path cuts right edge cleanly while leaving 8px top/bottom for focus ring */
+  clip-path: inset(-8px 0px -8px 0px);
+}
+
+.row-track {
+  display: flex;
+  width: max-content;
+  min-width: 100%;
+  gap: 14px;
+  padding: 8px 40px 12px 132px;
+  transition: none;
+}
+
+.row-track-no-transition {
+  transition: none;
+}

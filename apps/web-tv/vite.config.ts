@@ -1,11 +1,15 @@
 import { defineConfig } from 'vite'
-import solid from 'vite-plugin-solid'
-import tailwindcss from '@tailwindcss/vite'
+import react from '@vitejs/plugin-react'
 
 export default defineConfig({
-  base: '/',
-  plugins: [solid(), tailwindcss()],
-  optimizeDeps: {
-    include: ['axios', 'zod'],
+  plugins: [
+    react({
+      babel: {
+        plugins: [['babel-plugin-react-compiler']],
+      },
+    }),
+  ],
+  server: {
+    host: true,
   },
 })

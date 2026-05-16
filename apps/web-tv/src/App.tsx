@@ -1,88 +1,79 @@
-import { Show, createEffect, createMemo, createSignal, onMount } from 'solid-js'
-import { api, createPopular, createTopMovies, createTopTv } from './data'
+import { useEffect, useMemo, useState } from 'react'
+import { setFocus } from '@noriginmedia/norigin-spatial-navigation'
+import { api } from './api'
 import { Sidebar } from './components/Sidebar'
+import { Hero } from './components/Hero'
 import { MediaRow } from './components/MediaRow'
-import { focusFirstContent, initSpatialNavigation, refreshFocusable } from './engine/spatial'
-import type { ApiMovie } from '@neomovies/api-client'
-import './styles/App.css'
+import { useHomeRows } from './hooks/useHomeRows'
 
 export default function App() {
-  const [popular] = createPopular()
-  const [topMovies] = createTopMovies()
-  const [topTv] = createTopTv()
-  
-  const [activeMovie, setActiveMovie] = createSignal<ApiMovie>()
+  const { rows, activeMovie, setActiveMovie, isLoading } = useHomeRows()
+  const [sidebarHidden, setSidebarHidden] = useState(false)
+  const [lastContentFocusKey, setLastContentFocusKey] = useState('row-popular-card-0')
 
-  const rows = createMemo(() => {
-    const p = popular()?.data.results ?? []
-    const m = topMovies()?.data.results ?? []
-    const t = topTv()?.data.results ?? []
-    return [
-      { id: 'popular', title: 'Популярное', items: p.slice(0, 15) },
-      { id: 'movies', title: 'Фильмы', items: m.slice(0, 15) },
-      { id: 'tv', title: 'Сериалы', items: t.slice(0, 15) }
-    ].filter(r => r.items.length > 0)
-  })
+  const backdrop = useMemo(() => {
+    if (!activeMovie) return ''
+    return api.backdropUrl(activeMovie.id, 'xlarge')
+  }, [activeMovie])
 
-  onMount(() => {
-    initSpatialNavigation()
-    setTimeout(() => {
-      refreshFocusable()
-      focusFirstContent()
-    }, 200)
-  })
+  useEffect(() => {
+    if (isLoading || rows.length === 0) return
+    setFocus('row-popular-card-0')
+  }, [isLoading, rows.length])
 
-  createEffect(() => {
-    rows()
-    queueMicrotask(refreshFocusable)
-  })
+  useEffect(() => {
+    const handleSidebarBack = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' && event.key !== 'Backspace') return
 
-  const backdrop = () => {
-    const movie = activeMovie()
-    if (!movie) return ''
-    return `${api.backdropUrl(movie.id, 'xlarge')}`
-  }
+      event.preventDefault()
+      setSidebarHidden(false)
+      requestAnimationFrame(() => {
+        setFocus('sidebar-home')
+      })
+    }
+
+    window.addEventListener('keydown', handleSidebarBack)
+    return () => {
+      window.removeEventListener('keydown', handleSidebarBack)
+    }
+  }, [])
 
   return (
-    <div class="app-layout">
-      {/* Lampa-style Background */}
-      <div class="layer-bg">
-        <Show when={backdrop()}>
-          {(url) => <img class="layer-bg-image" src={url()} alt="" />}
-        </Show>
-        <div class="layer-bg-overlay" />
+    <div className="app-layout">
+      <div className="layer-bg">
+        {backdrop ? <img className="layer-bg-image" src={backdrop} alt="" /> : null}
+        <div className="layer-bg-overlay" />
       </div>
 
-      {/* Sidebar Layer */}
-      <Sidebar activeItem="home" />
+      <Sidebar activeItem="home" hidden={sidebarHidden} returnFocusKey={lastContentFocusKey} />
 
-      {/* Content Layer */}
-      <div class="content" data-focus-section="content">
-        <div class="content-spacer">
-           <Show when={activeMovie()}>
-             {(movie) => (
-               <div class="hero">
-                  <img class="hero-logo" src={`${api.logoUrl(movie().id)}?size=small&format=webp&quality=80`} />
-                  <div class="hero-desc">{movie().description}</div>
-               </div>
-             )}
-           </Show>
+      <div className="content">
+        <div className="content-spacer">
+          <Hero movie={activeMovie} />
         </div>
-        <div class="rows-container">
-          {rows().map((row, index) => (
-             <MediaRow 
-               title={row.title} 
-               items={row.items} 
-               firstRow={index === 0}
-               onCardFocus={setActiveMovie} 
-             />
-          ))}
+
+        <div className="rows-scroll">
+          <div className="rows-container">
+            {isLoading
+              ? [
+                  <MediaRow key="s1" rowId="popular" title="Популярное" items={[]} loading onCardFocus={setActiveMovie} onSidebarHiddenChange={setSidebarHidden} />,
+                  <MediaRow key="s2" rowId="movies" title="Фильмы" items={[]} loading onCardFocus={setActiveMovie} onSidebarHiddenChange={setSidebarHidden} />,
+                  <MediaRow key="s3" rowId="tv" title="Сериалы" items={[]} loading onCardFocus={setActiveMovie} onSidebarHiddenChange={setSidebarHidden} />,
+                ]
+              : rows.map((row) => (
+                  <MediaRow
+                    key={row.id}
+                    rowId={row.id}
+                    title={row.title}
+                    items={row.items}
+                    onSidebarHiddenChange={setSidebarHidden}
+                    onCardFocus={setActiveMovie}
+                    onContentFocus={setLastContentFocusKey}
+                  />
+                ))}
+          </div>
         </div>
       </div>
     </div>
   )
 }
-
-
-
-

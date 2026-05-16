@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/mediarow.tsx","./src/api.ts","./src/main.tsx","./src/types.ts","./src/components/hero.tsx","./src/components/mediarow.tsx","./src/components/morecard.tsx","./src/components/postercard.tsx","./src/components/sidebar.tsx","./src/hooks/usehomerows.ts"],"errors":true,"version":"5.9.3"}

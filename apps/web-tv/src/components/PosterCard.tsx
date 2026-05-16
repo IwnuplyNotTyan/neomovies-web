@@ -1,38 +1,53 @@
-import { Star } from 'lucide-solid'
+import { Star } from 'lucide-react'
+import { setFocus, useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import type { ApiMovie } from '@neomovies/api-client'
-import { api } from '../data'
-import './styles/PosterCard.css'
+import { api } from '../api'
+import './PosterCard.css'
 
 type PosterCardProps = {
   movie: ApiMovie
-  autofocus?: boolean
-  onFocus: (movie: ApiMovie) => void
+  focusKey: string
+  cardIndex: number
+  onEnterView: (element: HTMLButtonElement) => void
+  onFocused: (movie: ApiMovie) => void
+  onSidebarHiddenChange?: (hidden: boolean) => void
+  onContentFocus?: (focusKey: string) => void
 }
 
-export function PosterCard(props: PosterCardProps) {
-  const image = () => `${api.backdropPageUrl(props.movie.id, 1)}/medium`
+export function PosterCard({ movie, focusKey, cardIndex, onEnterView, onFocused, onSidebarHiddenChange, onContentFocus }: PosterCardProps) {
+  const { ref, focused } = useFocusable({
+    focusKey,
+    onFocus: () => {
+      // details.node is undefined in norigin v3 — use ref.current directly
+      if (ref.current) onEnterView(ref.current as HTMLButtonElement)
+      onContentFocus?.(focusKey)
+      onFocused(movie)
+    },
+    onArrowPress: (direction) => {
+      if (direction !== 'left' || cardIndex !== 0) return true
+
+      onSidebarHiddenChange?.(false)
+      requestAnimationFrame(() => {
+        setFocus('sidebar-home')
+      })
+
+      return false
+    },
+  })
 
   return (
-    <button 
-      type="button"
-      class="card focusable"
-      data-autofocus={props.autofocus ? 'true' : undefined}
-      onFocus={(e) => {
-        // Only scroll if needed, browser does this natively, but we ensure smooth center
-        e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
-        props.onFocus(props.movie)
-      }}
-    >
-      <img class="card-image" src={image()} alt={props.movie.title} loading="lazy" />
-      <div class="card-gradient" />
-      <div class="card-info">
-        <div class="card-title">{props.movie.title}</div>
-        <div class="card-rating">
-          <Star size={14} fill="currentColor" stroke-width={2.5} />
-          <span>{props.movie.rating > 0 ? props.movie.rating.toFixed(1) : '—'}</span>
+    <button ref={ref} type="button" className={`card ${focused ? 'is-focused' : ''}`}>
+      <div className="card-media">
+        <img className="card-image" src={`${api.backdropPageUrl(movie.id, 1)}/medium`} alt={movie.title} loading="lazy" />
+        <div className="card-shine" />
+        <div className="card-overlay">
+          <span className="card-title">{movie.title}</span>
+          <span className="card-rating-pill">
+            <Star size={12} fill="currentColor" strokeWidth={0} />
+            {movie.rating > 0 ? movie.rating.toFixed(1) : '—'}
+          </span>
         </div>
       </div>
     </button>
   )
 }
-

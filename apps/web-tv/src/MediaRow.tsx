@@ -1,4 +1,6 @@
-import { useMemo, useRef, useState } from 'react'
+'use no memo'
+
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import type { ApiMovie } from '@neomovies/api-client'
 import { PosterCard } from './PosterCard'
@@ -10,55 +12,53 @@ type MediaRowProps = {
   title: string
   items: ApiMovie[]
   loading?: boolean
-  onSidebarHiddenChange?: (hidden: boolean) => void
+  onRowShiftChange?: (shifted: boolean) => void
   onCardFocus: (movie: ApiMovie) => void
-  onContentFocus?: (focusKey: string) => void
 }
 
 const TRACK_PADDING_LEFT = 132
 const SAFE_RIGHT = 40
-const HIDE_SIDEBAR_THRESHOLD = 24
-export function MediaRow({
-  rowId,
-  title,
-  items,
-  loading = false,
-  onSidebarHiddenChange,
-  onCardFocus,
-  onContentFocus,
-}: MediaRowProps) {
+
+export function MediaRow({ rowId, title, items, loading = false, onRowShiftChange, onCardFocus }: MediaRowProps) {
   const rowFocusKey = `row-${rowId}`
   const trackRef = useRef<HTMLDivElement | null>(null)
   const viewportRef = useRef<HTMLDivElement | null>(null)
   const offsetRef = useRef(0)
-  const horizontalMoveRef = useRef(false)
   const [translateX, setTranslateX] = useState(0)
-  const [animateTrack, setAnimateTrack] = useState(false)
 
   const { ref } = useFocusable({
     focusKey: rowFocusKey,
-    focusable: false,
     trackChildren: true,
     saveLastFocusedChild: true,
     preferredChildFocusKey: `${rowFocusKey}-card-0`,
+    onFocus: (_layout, _props, details) => {
+      const rowElement = details.node as HTMLDivElement | undefined
+      rowElement?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' })
+      onRowShiftChange?.(false)
+    },
+  })
+
+  const { ref: moreButtonRef, focused: moreButtonFocused } = useFocusable({
+    focusKey: `row-${rowId}-more-button`,
   })
 
   const skeletons = useMemo(() => [0, 1, 2, 3, 4], [])
 
-  const scrollRowIntoView = (element: HTMLElement) => {
-    element.closest('.row')?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'nearest',
-      inline: 'nearest',
-    })
-  }
-
-  const syncRowPosition = (element: HTMLButtonElement) => {
-    scrollRowIntoView(element)
-
+  const syncRowPosition = useCallback((element: HTMLButtonElement) => {
     const trackElement = trackRef.current
     const viewportElement = viewportRef.current
-    if (!trackElement || !viewportElement) return
+
+    console.log(`[${rowFocusKey}] syncRowPosition called`, {
+      element,
+      trackElement,
+      viewportElement,
+      currentOffset: offsetRef.current,
+    })
+
+    if (!trackElement || !viewportElement) {
+      console.warn(`[${rowFocusKey}] MISSING REFS — track: ${!!trackElement}, viewport: ${!!viewportElement}`)
+      return
+    }
 
     let rawLeft = 0
     let node: HTMLElement | null = element
@@ -73,6 +73,16 @@ export function MediaRow({
     const usableWidth = viewportWidth - TRACK_PADDING_LEFT - SAFE_RIGHT
     const currentOffset = offsetRef.current
 
+    console.log(`[${rowFocusKey}] card pos`, {
+      rawLeft,
+      cardLeft,
+      cardRight,
+      viewportWidth,
+      usableWidth,
+      currentOffset,
+      trackScrollWidth: trackElement.scrollWidth,
+    })
+
     let nextOffset = currentOffset
     if (cardLeft < currentOffset) {
       nextOffset = Math.max(0, cardLeft)
@@ -83,31 +93,31 @@ export function MediaRow({
     const contentWidth = trackElement.scrollWidth - TRACK_PADDING_LEFT - SAFE_RIGHT
     const maxOffset = Math.max(0, contentWidth - usableWidth)
     const clamped = Math.min(Math.max(0, nextOffset), maxOffset)
-    const shouldAnimate = horizontalMoveRef.current
 
-    horizontalMoveRef.current = false
+    console.log(`[${rowFocusKey}] translate`, { nextOffset, clamped, maxOffset })
+
     offsetRef.current = clamped
-    setAnimateTrack(shouldAnimate)
     setTranslateX(-clamped)
-    onSidebarHiddenChange?.(clamped > HIDE_SIDEBAR_THRESHOLD)
-  }
-
-  const handleItemArrow = (direction: string) => {
-    if (direction === 'left' || direction === 'right') {
-      horizontalMoveRef.current = true
-    }
-  }
+    onRowShiftChange?.(clamped > 24)
+  }, [onRowShiftChange, rowFocusKey])
 
   return (
     <div ref={ref as React.RefObject<HTMLDivElement>} className="row">
       <div className="row-head">
         <div className="row-title">{title}</div>
+        <button
+          ref={moreButtonRef as React.RefObject<HTMLButtonElement>}
+          type="button"
+          className={`row-more ${moreButtonFocused ? 'is-focused' : ''}`}
+        >
+          Еще
+        </button>
       </div>
 
       <div ref={viewportRef} className="row-viewport">
         <div
           ref={trackRef}
-          className={`row-track ${animateTrack ? 'row-track-animate' : ''}`}
+          className="row-track"
           style={{ transform: `translate3d(${translateX}px, 0, 0)` }}
         >
           {loading ? (
@@ -122,16 +132,12 @@ export function MediaRow({
                   cardIndex={index}
                   onEnterView={syncRowPosition}
                   onFocused={onCardFocus}
-                  onSidebarHiddenChange={onSidebarHiddenChange}
-                  onContentFocus={onContentFocus}
-                  onArrowMove={handleItemArrow}
                 />
               ))}
               <MoreCard
                 focusKey={`${rowFocusKey}-more`}
+                cardIndex={items.length}
                 onEnterView={syncRowPosition}
-                onContentFocus={onContentFocus}
-                onArrowMove={handleItemArrow}
               />
             </>
           )}

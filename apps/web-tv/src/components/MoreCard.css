@@ -1,0 +1,42 @@
+.more-card {
+  flex: 0 0 auto;
+  width: clamp(240px, 16.9vw, 320px);
+  position: relative;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 20px;
+  outline: none;
+}
+
+.more-card-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 16 / 9;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(32, 18, 18, 0.82), rgba(17, 14, 20, 0.94));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.more-card-title {
+  font-size: 22px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.more-card::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.96);
+  opacity: 0;
+  transition: opacity 160ms ease;
+  pointer-events: none;
+}
+
+.more-card.is-focused::after {
+  opacity: 1;
+}

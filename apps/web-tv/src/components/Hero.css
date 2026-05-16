@@ -1,0 +1,52 @@
+.hero {
+  position: relative;
+  max-width: 760px;
+  min-height: 224px;
+}
+
+.hero-empty {
+  opacity: 0;
+}
+
+.hero-logo {
+  position: relative;
+  z-index: 2;
+  max-width: 400px;
+  max-height: 96px;
+  object-fit: contain;
+  object-position: left;
+  margin-bottom: 18px;
+  filter: drop-shadow(0 2px 18px rgba(0, 0, 0, 0.92)) drop-shadow(0 0 1px rgba(255, 255, 255, 0.05));
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  left: -14px;
+  top: -14px;
+  width: min(420px, 66vw);
+  height: 112px;
+  border-radius: 28px;
+  background:
+    linear-gradient(90deg, rgba(2, 4, 10, 0.82) 0%, rgba(4, 7, 13, 0.48) 58%, rgba(4, 7, 13, 0.06) 100%),
+    radial-gradient(circle at 26% 34%, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0) 32%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03), 0 12px 24px rgba(0, 0, 0, 0.16);
+  filter: blur(11px);
+  pointer-events: none;
+}
+
+.hero-desc {
+  position: relative;
+  z-index: 2;
+  max-width: 560px;
+  font-size: 16px;
+  line-height: 1.56;
+  color: rgba(255, 255, 255, 0.82);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.68);
+  /* No padding here — padding breaks line-clamp rendering */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
