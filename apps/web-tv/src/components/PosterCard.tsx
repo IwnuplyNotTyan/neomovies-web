@@ -12,9 +12,10 @@ type PosterCardProps = {
   onFocused: (movie: ApiMovie) => void
   onSidebarHiddenChange?: (hidden: boolean) => void
   onContentFocus?: (focusKey: string) => void
+  onArrowMove?: (direction: string) => void
 }
 
-export function PosterCard({ movie, focusKey, cardIndex, onEnterView, onFocused, onSidebarHiddenChange, onContentFocus }: PosterCardProps) {
+export function PosterCard({ movie, focusKey, cardIndex, onEnterView, onFocused, onSidebarHiddenChange, onContentFocus, onArrowMove }: PosterCardProps) {
   const { ref, focused } = useFocusable({
     focusKey,
     onFocus: () => {
@@ -24,7 +25,10 @@ export function PosterCard({ movie, focusKey, cardIndex, onEnterView, onFocused,
       onFocused(movie)
     },
     onArrowPress: (direction) => {
-      if (direction !== 'left' || cardIndex !== 0) return true
+      if (direction !== 'left' || cardIndex !== 0) {
+        onArrowMove?.(direction)
+        return true
+      }
 
       onSidebarHiddenChange?.(false)
       requestAnimationFrame(() => {

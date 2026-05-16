@@ -35,6 +35,6 @@
   transition: none;
 }
 
-.row-track-no-transition {
-  transition: none;
+.row-track-animate {
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
