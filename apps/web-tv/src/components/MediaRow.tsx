@@ -1,6 +1,7 @@
-import { useMemo, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import type { ApiMovie } from '@neomovies/api-client'
+import { useSkeletonCount } from '../hooks/useSkeletonCount'
 import { PosterCard } from './PosterCard'
 import { MoreCard } from './MoreCard'
 import './MediaRow.css'
@@ -13,11 +14,40 @@ type MediaRowProps = {
   onSidebarHiddenChange?: (hidden: boolean) => void
   onCardFocus: (movie: ApiMovie) => void
   onContentFocus?: (focusKey: string) => void
+  onOpenCategory?: () => void
+  onOpenDetails?: (movie: ApiMovie, focusKey: string) => void
 }
 
-const TRACK_PADDING_LEFT = 132
-const SAFE_RIGHT = 40
-const HIDE_SIDEBAR_THRESHOLD = 24
+function getOffsetInsideTrack(element: HTMLElement, trackElement: HTMLElement) {
+  let offset = 0
+  let node: HTMLElement | null = element
+
+  while (node && node !== trackElement) {
+    offset += node.offsetLeft
+    node = node.offsetParent as HTMLElement | null
+  }
+
+  return offset
+}
+
+function getTrackInsets(trackElement: HTMLElement) {
+  const style = window.getComputedStyle(trackElement)
+
+  return {
+    left: Number.parseFloat(style.paddingLeft) || 0,
+    right: Number.parseFloat(style.paddingRight) || 0,
+  }
+}
+
+function clampOffset(offset: number, trackElement: HTMLElement, viewportElement: HTMLElement) {
+  const insets = getTrackInsets(trackElement)
+  const usableWidth = viewportElement.clientWidth - insets.left - insets.right
+  const contentWidth = trackElement.scrollWidth - insets.left - insets.right
+  const maxOffset = Math.max(0, contentWidth - usableWidth)
+
+  return Math.min(Math.max(0, offset), maxOffset)
+}
+
 export function MediaRow({
   rowId,
   title,
@@ -26,6 +56,8 @@ export function MediaRow({
   onSidebarHiddenChange,
   onCardFocus,
   onContentFocus,
+  onOpenCategory,
+  onOpenDetails,
 }: MediaRowProps) {
   const rowFocusKey = `row-${rowId}`
   const trackRef = useRef<HTMLDivElement | null>(null)
@@ -33,6 +65,7 @@ export function MediaRow({
   const offsetRef = useRef(0)
   const horizontalMoveRef = useRef(false)
   const [translateX, setTranslateX] = useState(0)
+  const skeletonCount = useSkeletonCount(viewportRef, 5)
   const [animateTrack, setAnimateTrack] = useState(false)
 
   const { ref } = useFocusable({
@@ -42,8 +75,6 @@ export function MediaRow({
     saveLastFocusedChild: true,
     preferredChildFocusKey: `${rowFocusKey}-card-0`,
   })
-
-  const skeletons = useMemo(() => [0, 1, 2, 3, 4], [])
 
   const scrollRowIntoView = (element: HTMLElement) => {
     element.closest('.row')?.scrollIntoView({
@@ -60,36 +91,28 @@ export function MediaRow({
     const viewportElement = viewportRef.current
     if (!trackElement || !viewportElement) return
 
-    let rawLeft = 0
-    let node: HTMLElement | null = element
-    while (node && node !== trackElement) {
-      rawLeft += node.offsetLeft
-      node = node.offsetParent as HTMLElement | null
-    }
-
-    const cardLeft = rawLeft - TRACK_PADDING_LEFT
+    const insets = getTrackInsets(trackElement)
+    const cardLeft = getOffsetInsideTrack(element, trackElement) - insets.left
     const cardRight = cardLeft + element.offsetWidth
-    const viewportWidth = viewportElement.clientWidth
-    const usableWidth = viewportWidth - TRACK_PADDING_LEFT - SAFE_RIGHT
+    const usableWidth = viewportElement.clientWidth - insets.left - insets.right
+    const visibleRight = offsetRef.current + usableWidth
     const currentOffset = offsetRef.current
 
     let nextOffset = currentOffset
     if (cardLeft < currentOffset) {
       nextOffset = Math.max(0, cardLeft)
-    } else if (cardRight > currentOffset + usableWidth) {
+    } else if (cardRight > visibleRight) {
       nextOffset = cardRight - usableWidth
     }
 
-    const contentWidth = trackElement.scrollWidth - TRACK_PADDING_LEFT - SAFE_RIGHT
-    const maxOffset = Math.max(0, contentWidth - usableWidth)
-    const clamped = Math.min(Math.max(0, nextOffset), maxOffset)
+    const clamped = clampOffset(nextOffset, trackElement, viewportElement)
     const shouldAnimate = horizontalMoveRef.current
 
     horizontalMoveRef.current = false
     offsetRef.current = clamped
     setAnimateTrack(shouldAnimate)
     setTranslateX(-clamped)
-    onSidebarHiddenChange?.(clamped > HIDE_SIDEBAR_THRESHOLD)
+    onSidebarHiddenChange?.(clamped > 0)
   }
 
   const handleItemArrow = (direction: string) => {
@@ -100,9 +123,7 @@ export function MediaRow({
 
   return (
     <div ref={ref as React.RefObject<HTMLDivElement>} className="row">
-      <div className="row-head">
-        <div className="row-title">{title}</div>
-      </div>
+      <h2 className="row-title">{title}</h2>
 
       <div ref={viewportRef} className="row-viewport">
         <div
@@ -111,7 +132,7 @@ export function MediaRow({
           style={{ transform: `translate3d(${translateX}px, 0, 0)` }}
         >
           {loading ? (
-            skeletons.map((item) => <div key={item} className="card-skeleton" />)
+            Array.from({ length: skeletonCount }, (_, item) => <div key={item} className="card-skeleton" />)
           ) : (
             <>
               {items.map((movie, index) => (
@@ -125,6 +146,7 @@ export function MediaRow({
                   onSidebarHiddenChange={onSidebarHiddenChange}
                   onContentFocus={onContentFocus}
                   onArrowMove={handleItemArrow}
+                  onEnterPress={onOpenDetails}
                 />
               ))}
               <MoreCard
@@ -132,6 +154,7 @@ export function MediaRow({
                 onEnterView={syncRowPosition}
                 onContentFocus={onContentFocus}
                 onArrowMove={handleItemArrow}
+                onEnter={onOpenCategory}
               />
             </>
           )}

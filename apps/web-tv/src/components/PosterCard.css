@@ -39,7 +39,13 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  opacity: 0;
   filter: brightness(0.9);
+  transition: opacity 220ms ease, filter 180ms ease, transform 180ms ease;
+}
+
+.card-image.is-loaded {
+  opacity: 1;
 }
 
 .card-shine {
@@ -114,6 +120,29 @@
 
 .card.is-focused .card-shine {
   opacity: 1;
+}
+
+.card-search {
+  width: 100%;
+}
+
+.card-search .card-media {
+  aspect-ratio: 2 / 3;
+  border-radius: 18px;
+}
+
+.card-search .card-overlay {
+  align-items: flex-end;
+  padding: 14px 12px 12px;
+}
+
+.card-search .card-title {
+  font-size: 18px;
+  line-height: 1.15;
+}
+
+.card-search .card-rating-pill {
+  padding: 6px 9px;
 }
 
 .card-skeleton {

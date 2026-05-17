@@ -1,0 +1,405 @@
+.watch-view {
+    position: relative;
+    z-index: 6;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    padding: 32px 48px 46px;
+}
+
+.watch-backdrop,
+.watch-backdrop-overlay,
+.watch-backdrop-skeleton {
+    position: absolute;
+    inset: 0;
+}
+
+/* ─── Backdrop skeleton ─────────────────────────────────────────── */
+.watch-backdrop-skeleton {
+    background: linear-gradient(135deg, #0d1018 0%, #12161f 40%, #0d1018 100%);
+    transition: opacity 0.4s ease;
+    z-index: 0;
+}
+
+.watch-backdrop-skeleton.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ─── Backdrop ──────────────────────────────────────────────────── */
+.watch-backdrop {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.65) saturate(1.1);
+    transform: scale(1.05);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    z-index: 0;
+}
+
+.watch-backdrop.is-loaded {
+    opacity: 1;
+}
+
+.watch-backdrop-overlay {
+    background:
+        linear-gradient(
+            90deg,
+            rgba(8, 10, 18, 0.92) 0%,
+            rgba(8, 10, 18, 0.72) 38%,
+            rgba(8, 10, 18, 0.18) 100%
+        ),
+        linear-gradient(
+            180deg,
+            rgba(8, 10, 18, 0.28) 0%,
+            rgba(8, 10, 18, 0.6) 65%,
+            rgba(8, 10, 18, 0.96) 100%
+        );
+    z-index: 1;
+}
+
+.watch-topbar,
+.watch-layout {
+    position: relative;
+    z-index: 2;
+}
+
+.watch-topbar {
+    margin-bottom: 20px;
+}
+
+/* ─── Back button ──────────────────────────────────────────────── */
+.watch-back-button {
+    border: 0;
+    outline: none;
+    font: inherit;
+    padding: 10px 20px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.watch-back-button.is-focused {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.16);
+    color: #fff;
+}
+
+/* ─── Layout ───────────────────────────────────────────────────── */
+.watch-layout {
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr);
+    gap: 48px;
+    align-items: start;
+}
+
+/* ─── Poster shell + skeleton ───────────────────────────────────── */
+.watch-poster-shell {
+    position: relative;
+    overflow: hidden;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+    aspect-ratio: 2 / 3;
+}
+
+.watch-poster-skeleton {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    background-size: 220% 100%;
+    animation: watch-shimmer 1.4s linear infinite;
+    border-radius: 24px;
+}
+
+.watch-poster {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.watch-poster.is-loaded {
+    opacity: 1;
+}
+
+/* ─── Copy ─────────────────────────────────────────────────────── */
+.watch-copy {
+    min-width: 0;
+    padding-top: 8px;
+}
+
+.watch-meta-top {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 14px;
+}
+
+.watch-logo {
+    display: block;
+    width: min(480px, 52vw);
+    max-height: 120px;
+    object-fit: contain;
+    object-position: left center;
+    margin-bottom: 10px;
+}
+
+.watch-title {
+    margin: 0 0 10px;
+    font-size: clamp(42px, 5.5vw, 80px);
+    line-height: 0.93;
+    letter-spacing: -0.06em;
+    font-weight: 900;
+    color: #fff;
+}
+
+.watch-subtitle {
+    margin-bottom: 14px;
+    font-size: 18px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* ─── Badges ───────────────────────────────────────────────────── */
+.watch-badges-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 28px;
+}
+
+.watch-badge {
+    padding: 6px 13px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.watch-badge-rating {
+    background: rgba(245, 197, 66, 0.2);
+    color: #f5c542;
+}
+
+.watch-badge-muted {
+    background: rgba(255, 255, 255, 0.07);
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* ─── Player buttons ───────────────────────────────────────────── */
+.watch-actions-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 36px;
+}
+
+.watch-player-button {
+    border: 0;
+    outline: none;
+    font: inherit;
+    min-width: 160px;
+    padding: 18px 22px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    text-align: left;
+    cursor: pointer;
+    transition:
+        background 0.15s,
+        border-color 0.15s;
+}
+
+.watch-player-button.is-active {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.22);
+}
+
+.watch-player-button.is-focused {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.watch-player-button-title {
+    display: block;
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 4px;
+}
+
+.watch-player-button-text {
+    display: block;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* ─── Description ──────────────────────────────────────────────── */
+.watch-section-title {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.35);
+    margin-bottom: 10px;
+}
+
+.watch-description {
+    max-width: 860px;
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.65;
+    color: rgba(255, 255, 255, 0.65);
+}
+
+/* ─── States ───────────────────────────────────────────────────── */
+.watch-state {
+    margin-top: 16px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.watch-state.is-error {
+    color: rgba(255, 160, 160, 0.9);
+}
+
+/* ─── Content skeleton ─────────────────────────────────────────── */
+@keyframes watch-shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -20% 0;
+    }
+}
+
+.watch-content-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+/* Базовый скелетон-блок */
+.watch-skeleton-line,
+.watch-skeleton-badge,
+.watch-skeleton-btn {
+    border-radius: 8px;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.06) 0%,
+        rgba(255, 255, 255, 0.13) 50%,
+        rgba(255, 255, 255, 0.06) 100%
+    );
+    background-size: 220% 100%;
+    animation: watch-shimmer 1.4s linear infinite;
+}
+
+/* Строка мета (год, страна) */
+.watch-skeleton-meta {
+    width: 160px;
+    height: 13px;
+    margin-bottom: 20px;
+    animation-delay: 0s;
+}
+
+/* Заголовок — две строки разной ширины */
+.watch-skeleton-title {
+    width: 72%;
+    height: clamp(42px, 5.5vw, 72px);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    animation-delay: 0.05s;
+}
+
+.watch-skeleton-title-short {
+    width: 48%;
+    animation-delay: 0.1s;
+    margin-bottom: 28px;
+}
+
+/* Бейджи */
+.watch-skeleton-badges {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 28px;
+}
+
+.watch-skeleton-badge {
+    width: 70px;
+    height: 30px;
+    border-radius: 10px;
+    animation-delay: 0.12s;
+}
+
+.watch-skeleton-badge:nth-child(2) {
+    width: 54px;
+    animation-delay: 0.16s;
+}
+
+.watch-skeleton-badge:nth-child(3) {
+    width: 80px;
+    animation-delay: 0.2s;
+}
+
+/* Кнопки плееров */
+.watch-skeleton-buttons {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 36px;
+}
+
+.watch-skeleton-btn {
+    width: 160px;
+    height: 80px;
+    border-radius: 20px;
+    animation-delay: 0.18s;
+}
+
+.watch-skeleton-btn:nth-child(2) {
+    animation-delay: 0.23s;
+}
+.watch-skeleton-btn:nth-child(3) {
+    animation-delay: 0.28s;
+}
+
+/* Секция «О фильме» */
+.watch-skeleton-section {
+    width: 80px;
+    height: 13px;
+    margin-bottom: 14px;
+    animation-delay: 0.25s;
+}
+
+/* Описание */
+.watch-skeleton-desc {
+    width: 100%;
+    max-width: 860px;
+    height: 16px;
+    margin-bottom: 10px;
+    animation-delay: 0.3s;
+}
+
+.watch-skeleton-desc-short {
+    width: 65%;
+    animation-delay: 0.35s;
+    margin-bottom: 0;
+}

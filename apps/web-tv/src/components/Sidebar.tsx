@@ -1,11 +1,27 @@
-import { Heart, Home, Search, Tv, User, Film } from 'lucide-react'
+import Film from 'lucide-react/dist/esm/icons/film.js'
+import Heart from 'lucide-react/dist/esm/icons/heart.js'
+import Home from 'lucide-react/dist/esm/icons/home.js'
+import Search from 'lucide-react/dist/esm/icons/search.js'
+import Tv from 'lucide-react/dist/esm/icons/tv.js'
+import User from 'lucide-react/dist/esm/icons/user.js'
+import { useEffect } from 'react'
 import { setFocus, useFocusable } from '@noriginmedia/norigin-spatial-navigation'
+import type { CategoryId } from '../types'
 import './Sidebar.css'
+
+const getCategoryId = (itemKey: string): CategoryId | null => {
+  if (itemKey === 'popular' || itemKey === 'movies' || itemKey === 'tv') return itemKey
+  return null
+}
 
 type SidebarProps = {
   activeItem: string
   hidden?: boolean
   returnFocusKey?: string
+  onOpenCategory?: (categoryId: CategoryId) => void
+  onOpenHome?: () => void
+  onOpenSearch?: () => void
+  suppressCategoryOpen?: boolean
 }
 
 const items = [
@@ -21,21 +37,43 @@ type SidebarButtonProps = {
   active: boolean
   icon: typeof Search
   returnFocusKey?: string
+  onOpenCategory?: (categoryId: CategoryId) => void
+  onOpenHome?: () => void
+  onOpenSearch?: () => void
+  suppressCategoryOpen?: boolean
 }
 
-function SidebarButton({ itemKey, active, icon: Icon, returnFocusKey }: SidebarButtonProps) {
+function SidebarButton({ itemKey, active, icon: Icon, returnFocusKey, onOpenCategory, onOpenHome, onOpenSearch, suppressCategoryOpen = false }: SidebarButtonProps) {
+  const categoryId = getCategoryId(itemKey)
+
+  const returnToContent = () => {
+    if (!returnFocusKey) return false
+
+    requestAnimationFrame(() => {
+      setFocus(returnFocusKey)
+    })
+
+    return true
+  }
+
   const { ref, focused } = useFocusable({
     focusKey: `sidebar-${itemKey}`,
     onArrowPress: (direction) => {
-      if (direction !== 'right' || !returnFocusKey) return true
-
-      requestAnimationFrame(() => {
-        setFocus(returnFocusKey)
-      })
-
-      return false
+      if (direction !== 'right') return true
+      return !returnToContent()
     },
   })
+
+  useEffect(() => {
+    if (!focused) return
+    if (categoryId && !suppressCategoryOpen) onOpenCategory?.(categoryId)
+    if (itemKey === 'home') onOpenHome?.()
+    if (itemKey === 'search') {
+      requestAnimationFrame(() => {
+        onOpenSearch?.()
+      })
+    }
+  }, [categoryId, focused, itemKey, onOpenCategory, onOpenHome, onOpenSearch, suppressCategoryOpen])
 
   return (
     <button
@@ -48,13 +86,13 @@ function SidebarButton({ itemKey, active, icon: Icon, returnFocusKey }: SidebarB
   )
 }
 
-export function Sidebar({ activeItem, hidden = false, returnFocusKey }: SidebarProps) {
+export function Sidebar({ activeItem, hidden = false, returnFocusKey, onOpenCategory, onOpenHome, onOpenSearch, suppressCategoryOpen = false }: SidebarProps) {
+  const activeCategoryId = getCategoryId(activeItem)
+
   const { ref } = useFocusable({
     focusKey: 'sidebar',
     trackChildren: true,
-    // saveLastFocusedChild so when coming back it remembers which button was focused
     saveLastFocusedChild: true,
-    // preferred key = active item, used only on first focus, then saveLastFocusedChild takes over
     preferredChildFocusKey: `sidebar-${activeItem}`,
   })
 
@@ -77,6 +115,10 @@ export function Sidebar({ activeItem, hidden = false, returnFocusKey }: SidebarP
             active={activeItem === item.key}
             icon={item.icon}
             returnFocusKey={returnFocusKey}
+            onOpenCategory={onOpenCategory}
+            onOpenHome={onOpenHome}
+            onOpenSearch={onOpenSearch}
+            suppressCategoryOpen={suppressCategoryOpen && item.key === activeCategoryId}
           />
         ))}
       </div>

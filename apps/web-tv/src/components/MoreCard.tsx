@@ -6,20 +6,25 @@ type MoreCardProps = {
   onEnterView: (element: HTMLButtonElement) => void
   onContentFocus?: (focusKey: string) => void
   onArrowMove?: (direction: string) => void
+  onEnter?: () => void
 }
 
-export function MoreCard({ focusKey, onEnterView, onContentFocus, onArrowMove }: MoreCardProps) {
+export function MoreCard({ focusKey, onEnterView, onContentFocus, onArrowMove, onEnter }: MoreCardProps) {
+  const handleFocus = () => {
+    if (ref.current) onEnterView(ref.current as HTMLButtonElement)
+    onContentFocus?.(focusKey)
+  }
+
+  const handleArrowPress = (direction: string) => {
+    onArrowMove?.(direction)
+    return true
+  }
+
   const { ref, focused } = useFocusable({
     focusKey,
-    onFocus: () => {
-      // details.node is undefined in norigin v3 — use ref.current directly
-      if (ref.current) onEnterView(ref.current as HTMLButtonElement)
-      onContentFocus?.(focusKey)
-    },
-    onArrowPress: (direction) => {
-      onArrowMove?.(direction)
-      return true
-    },
+    onFocus: handleFocus,
+    onEnterPress: onEnter,
+    onArrowPress: handleArrowPress,
   })
 
   return (

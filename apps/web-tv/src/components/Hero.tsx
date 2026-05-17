@@ -17,6 +17,10 @@ export function Hero({ movie }: HeroProps) {
         className="hero-logo"
         src={`${api.logoUrl(movie.id)}?size=small&format=webp&quality=80`}
         alt={movie.title}
+        width={430}
+        height={106}
+        decoding="async"
+        loading="eager"
       />
       <div className="hero-desc">{movie.description}</div>
     </div>

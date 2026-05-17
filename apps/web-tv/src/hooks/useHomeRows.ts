@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import type { ApiMovie } from '@neomovies/api-client'
 import { fetchHomeRows } from '../api'
-import type { HomeRow, HomeRows } from '../types'
+import { categoryTitles } from '../categoryConfig'
+import type { CategoryId, HomeRow, HomeRows } from '../types'
 
 const EMPTY_ROWS: HomeRows = {
   popular: [],
@@ -31,9 +32,9 @@ export function useHomeRows() {
   }, [])
 
   const rows: HomeRow[] = [
-    { id: 'popular', title: 'Популярное', items: data.popular.slice(0, 15) },
-    { id: 'movies', title: 'Фильмы', items: data.movies.slice(0, 15) },
-    { id: 'tv', title: 'Сериалы', items: data.tv.slice(0, 15) },
+    { id: 'popular' as CategoryId, title: categoryTitles.popular, items: data.popular.slice(0, 15) },
+    { id: 'movies' as CategoryId, title: categoryTitles.movies, items: data.movies.slice(0, 15) },
+    { id: 'tv' as CategoryId, title: categoryTitles.tv, items: data.tv.slice(0, 15) },
   ].filter((row) => row.items.length > 0)
 
   return {
