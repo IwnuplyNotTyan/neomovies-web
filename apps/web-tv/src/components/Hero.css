@@ -1,0 +1,62 @@
+.hero {
+  position: relative;
+  max-width: 760px;
+  min-height: 224px;
+  isolation: isolate;
+}
+
+.hero-empty {
+  opacity: 0;
+}
+
+.hero-logo {
+  position: relative;
+  z-index: 2;
+  max-width: 430px;
+  max-height: 106px;
+  object-fit: contain;
+  object-position: left;
+  margin-bottom: 20px;
+  filter:
+    brightness(1.04)
+    contrast(1.08)
+    drop-shadow(0 3px 18px rgba(0, 0, 0, 0.92))
+    drop-shadow(0 0 1px rgba(255, 255, 255, 0.42));
+  transition: opacity 220ms ease, filter 260ms ease, transform 260ms ease;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  left: -24px;
+  top: -22px;
+  width: min(650px, 68vw);
+  height: 210px;
+  border-radius: 34px;
+  background:
+    linear-gradient(90deg, rgba(2, 4, 10, 0.88) 0%, rgba(4, 7, 13, 0.58) 58%, rgba(4, 7, 13, 0.04) 100%),
+    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 28%),
+    radial-gradient(circle at 26% 46%, rgba(94, 125, 255, 0.08), rgba(94, 125, 255, 0) 40%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.035), 0 18px 42px rgba(0, 0, 0, 0.24);
+  filter: blur(14px);
+  pointer-events: none;
+}
+
+.hero-desc {
+  position: relative;
+  z-index: 2;
+  max-width: 590px;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  color: rgba(255, 255, 255, 0.86);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.74);
+  /* No padding here — padding breaks line-clamp rendering */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: opacity 220ms ease, transform 260ms ease;
+}

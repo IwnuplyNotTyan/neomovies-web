@@ -1,6 +1,7 @@
 import { Suspense, lazy, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Outlet, useLocation } from 'react-router-dom'
 import { Layout } from './components/Layout'
+import { TermsGuard } from './components/TermsGuard'
 import { Home } from './pages/Home'
 
 const Movies = lazy(() => import('./pages/Movies').then((m) => ({ default: m.Movies })))
@@ -37,10 +38,12 @@ function SearchRoute({ Search }: { Search: React.ComponentType }) {
 
 function LayoutRoute() {
   return (
-    <Layout>
-      <ScrollToTop />
-      <Outlet />
-    </Layout>
+    <TermsGuard>
+      <Layout>
+        <ScrollToTop />
+        <Outlet />
+      </Layout>
+    </TermsGuard>
   )
 }
 
