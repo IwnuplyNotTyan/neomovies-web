@@ -134,11 +134,7 @@ export function MoviePage({ id }: { id: string }) {
           <div style={{ marginRight: 8, marginBottom: 8 }}>
             <Badge>{movie.type === 'tv' ? 'Сериал' : 'Фильм'}</Badge>
           </div>
-          {movie.duration ? (
-            <div style={{ marginRight: 8, marginBottom: 8 }}>
-              <Badge>{Math.round(movie.duration / 60) + ' мин'}</Badge>
-            </div>
-          ) : null}
+
         </div>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', marginTop: 16 }}>
