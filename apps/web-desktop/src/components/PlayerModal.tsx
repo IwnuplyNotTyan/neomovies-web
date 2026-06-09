@@ -11,25 +11,67 @@ export function PlayerModal({ url, html, open, onClose }: PlayerModalProps) {
   if (!open) return null
 
   return (
-    <View className="absolute inset-0 z-50 bg-black">
+    <View
+      style={{
+        position: 'absolute',
+        inset: 0,
+        zIndex: 50,
+        backgroundColor: 'rgba(0,0,0,0.9)',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
       <Pressable
-        className="absolute top-4 right-4 z-10 rounded-full bg-white/8 border border-white/10 px-5 py-2"
+        style={{
+          position: 'absolute',
+          top: 16,
+          right: 16,
+          zIndex: 10,
+          borderRadius: 999,
+          backgroundColor: 'rgba(255,255,255,0.08)',
+          borderWidth: 1,
+          borderColor: 'rgba(255,255,255,0.1)',
+          paddingHorizontal: 20,
+          paddingVertical: 8,
+        }}
         onPress={onClose}
       >
-        <Text className="text-zinc-100 font-medium">✕ Закрыть</Text>
+        <Text style={{ color: '#e4e4e7', fontWeight: 500, fontSize: 14 }}>
+          ✕ Закрыть
+        </Text>
       </Pressable>
       {url && (
-        <iframe
-          src={url}
-          className="w-full h-full"
-          allowFullScreen
-          allow="autoplay; fullscreen"
-          style={{ border: 0 }}
-        />
+        <View
+          style={{
+            width: '100%',
+            maxWidth: 1024,
+            paddingHorizontal: 16,
+            aspectRatio: 16 / 9,
+          }}
+        >
+          <iframe
+            src={url}
+            allowFullScreen
+            allow="autoplay; fullscreen"
+            style={{
+              width: '100%',
+              height: '100%',
+              borderRadius: 12,
+              border: 0,
+            }}
+          />
+        </View>
       )}
       {html && !url && (
-        <View className="flex-1 items-center justify-center p-8">
-          <Text className="text-zinc-400 text-sm">
+        <View
+          style={{
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 32,
+          }}
+        >
+          <Text style={{ color: '#a1a1aa', fontSize: 14 }}>
             Плеер не поддерживается в этом браузере
           </Text>
         </View>

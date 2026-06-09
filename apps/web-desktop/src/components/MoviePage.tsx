@@ -1,16 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'expo-router'
 import type { ApiMovie } from '@neomovies/api-client'
 import {
   HeroBanner,
-  Section,
-  Eyebrow,
   Text,
   Badge,
   Button,
   Spinner,
 } from '@neo-open-source/ui-web'
-import { PlayerModal } from './PlayerModal'
 import {
   fetchMovieDetails,
   fetchPlayerSource,
@@ -20,7 +17,7 @@ import {
 import type { PlayerKey, PlayerResult } from '../api'
 
 const PLAYER_LABELS: Record<PlayerKey, string> = {
-  cdn: 'Плеер 1',
+  cdn: '',
   alloha: 'Alloha',
   collaps: 'Collaps',
   lumex: 'Lumex',
@@ -35,8 +32,7 @@ export function MoviePage({ id }: { id: string }) {
   const [error, setError] = useState<string | null>(null)
   const [movie, setMovie] = useState<ApiMovie | null>(null)
 
-  const [players, setPlayers] = useState<PlayerKey[]>(DEFAULT_PLAYERS)
-  const cdnCheckDoneRef = useRef(false)
+  const [players] = useState<PlayerKey[]>(DEFAULT_PLAYERS)
 
   const [playerLoading, setPlayerLoading] = useState(false)
   const [playerModalOpen, setPlayerModalOpen] = useState(false)
@@ -67,17 +63,6 @@ export function MoviePage({ id }: { id: string }) {
       cancelled = true
     }
   }, [id])
-
-  useEffect(() => {
-    if (!movie || cdnCheckDoneRef.current) return
-    cdnCheckDoneRef.current = true
-
-    fetchPlayerSource(movie, 'cdn').then((result) => {
-      if (result.cdnAvailable) {
-        setPlayers((prev) => ['cdn', ...prev])
-      }
-    })
-  }, [movie])
 
   async function handleOpenPlayer(player: PlayerKey) {
     if (!movie) return
@@ -120,74 +105,121 @@ export function MoviePage({ id }: { id: string }) {
   const metaParts = [yearText, movie.country].filter(Boolean)
   const metaLine = metaParts.length > 0 ? metaParts.join(' • ') : ''
 
-  const primaryPlayer = players[0]
-
   return (
     <div className="min-h-screen bg-black">
       <HeroBanner
         title={movie.title}
-        tagline={
-          movie.originalTitle && movie.originalTitle !== movie.title
-            ? movie.originalTitle
-            : undefined
-        }
         meta={metaLine}
         rating={movie.rating}
         backdrop={backdropUrl}
         poster={posterUrl}
-        primaryActionLabel="Смотреть"
-        onPrimaryAction={() => handleOpenPlayer(primaryPlayer)}
-        secondaryActionLabel="Ещё плееры"
       />
 
-      <Section className="px-8 py-6">
-        <div className="flex flex-wrap gap-2 mb-6">
-          {movie.rating ? (
-            <Badge tone="warning">{movie.rating.toFixed(1)}</Badge>
-          ) : null}
-          <Badge>{movie.type === 'tv' ? 'Сериал' : 'Фильм'}</Badge>
-          {movie.duration ? (
-            <Badge>{Math.round(movie.duration / 60) + ' мин'}</Badge>
-          ) : null}
+      <div style={{ padding: '24px 32px 24px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap' }}>
           {movie.genres?.map((g) => (
-            <Badge key={g.id}>{g.name}</Badge>
+            <div key={g.id} style={{ marginRight: 8, marginBottom: 8 }}>
+              <Badge>{g.name}</Badge>
+            </div>
           ))}
+          <div style={{ marginRight: 8, marginBottom: 8 }}>
+            <Badge>{movie.type === 'tv' ? 'Сериал' : 'Фильм'}</Badge>
+          </div>
+          {movie.duration ? (
+            <div style={{ marginRight: 8, marginBottom: 8 }}>
+              <Badge>{Math.round(movie.duration / 60) + ' мин'}</Badge>
+            </div>
+          ) : null}
         </div>
 
-        <div className="flex flex-wrap gap-3 mb-8">
+        <div style={{ display: 'flex', flexWrap: 'wrap', marginTop: 16 }}>
           {players.map((player) => (
-            <Button
-              key={player}
-              variant="secondary"
-              size="lg"
-              onClick={() => handleOpenPlayer(player)}
-            >
-              {PLAYER_LABELS[player]}
-            </Button>
+            <div key={player} style={{ marginRight: 8, marginBottom: 8 }}>
+              <Button
+                variant="secondary"
+                size="lg"
+                onClick={() => handleOpenPlayer(player)}
+              >
+                {PLAYER_LABELS[player]}
+              </Button>
+            </div>
           ))}
         </div>
+      </div>
 
-        <Eyebrow>О фильме</Eyebrow>
-        <Text className="text-zinc-400 max-w-2xl mt-2 leading-relaxed">
+      <div style={{ padding: '0 32px 32px' }}>
+        <h2
+          style={{
+            fontSize: 24,
+            fontWeight: 800,
+            color: '#fff',
+            margin: 0,
+            marginBottom: 16,
+          }}
+        >
+          О фильме
+        </h2>
+        <p
+          style={{
+            color: 'rgba(255,255,255,0.9)',
+            fontSize: 17,
+            lineHeight: 1.7,
+            maxWidth: 700,
+            margin: 0,
+            marginBottom: 24,
+          }}
+        >
           {movie.description || 'Описание недоступно.'}
-        </Text>
-      </Section>
+        </p>
 
-      {playerLoading && (
-        <div className="fixed inset-0 z-40 bg-black/60 flex items-center justify-center">
-          <Spinner />
-          <Text className="text-white mt-3 ml-2">Загружаем плеер...</Text>
-        </div>
-      )}
+        {playerLoading && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 48,
+            }}
+          >
+            <Spinner />
+            <Text style={{ color: '#fff', marginLeft: 12 }}>
+              Загружаем плеер...
+            </Text>
+          </div>
+        )}
 
-      {playerResult ? (
-        <PlayerModal
-          url={playerResult.playerUrl}
-          html={playerResult.playerHtml}
-          open={playerModalOpen}
-          onClose={() => setPlayerModalOpen(false)}
-        />
-      ) : null}
+        {playerResult && playerModalOpen && (
+          <div
+            style={{
+              width: '100%',
+              maxWidth: 1024,
+              aspectRatio: 16 / 9,
+              borderRadius: 12,
+              overflow: 'hidden',
+              marginBottom: 0,
+            }}
+          >
+            {playerResult.playerUrl && (
+              <iframe
+                src={playerResult.playerUrl}
+                allowFullScreen
+                allow="autoplay; fullscreen"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  border: 0,
+                }}
+              />
+            )}
+            {playerResult.playerHtml && !playerResult.playerUrl && (
+              <div
+                dangerouslySetInnerHTML={{ __html: playerResult.playerHtml }}
+                style={{ width: '100%', height: '100%' }}
+              />
+            )}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

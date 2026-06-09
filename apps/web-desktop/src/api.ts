@@ -62,17 +62,8 @@ export async function fetchPlayerSource(
     return { playerUrl: null, playerHtml: null, cdnAvailable: false };
 
   if (player === "cdn") {
-    try {
-      const cdnUrl = `${API_BASE_URL}/api/v1/players/cdn/kp/${kpId}`;
-      const check = await fetch(cdnUrl, { method: "HEAD" });
-      const ct = check.headers.get("content-type") || "";
-      if (!check.ok || ct.includes("application/json")) {
-        return { playerUrl: null, playerHtml: null, cdnAvailable: false };
-      }
-      return { playerUrl: cdnUrl, playerHtml: null, cdnAvailable: true };
-    } catch {
-      return { playerUrl: null, playerHtml: null, cdnAvailable: false };
-    }
+    const cdnUrl = `${API_BASE_URL}/api/v1/players/cdn/kp/${kpId}`;
+    return { playerUrl: cdnUrl, playerHtml: null, cdnAvailable: true };
   }
 
   try {
