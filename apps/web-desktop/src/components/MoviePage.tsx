@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'expo-router'
 import type { ApiMovie } from '@neomovies/api-client'
 import {
@@ -64,6 +64,8 @@ export function MoviePage({ id }: { id: string }) {
     }
   }, [id])
 
+  const autoOpened = useRef(false)
+
   async function handleOpenPlayer(player: PlayerKey) {
     if (!movie) return
     setPlayerModalOpen(false)
@@ -77,6 +79,13 @@ export function MoviePage({ id }: { id: string }) {
       setPlayerLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (movie && !autoOpened.current) {
+      autoOpened.current = true
+      handleOpenPlayer('alloha')
+    }
+  }, [movie])
 
   if (loading) {
     return (
