@@ -1,7 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
-import { View, Text, Image, ScrollView, ActivityIndicator, Pressable } from 'react-native'
 import { useRouter } from 'expo-router'
 import type { ApiMovie } from '@neomovies/api-client'
+import {
+  HeroBanner,
+  Section,
+  Eyebrow,
+  Text,
+  Badge,
+  Button,
+  Spinner,
+} from '@neo-open-source/ui-web'
 import { PlayerModal } from './PlayerModal'
 import {
   fetchMovieDetails,
@@ -19,25 +27,6 @@ const PLAYER_LABELS: Record<PlayerKey, string> = {
 }
 
 const DEFAULT_PLAYERS: PlayerKey[] = ['alloha', 'collaps', 'lumex']
-
-function MoviePageSkeleton() {
-  return (
-    <ScrollView className="flex-1">
-      <View className="flex-row p-8">
-        <View className="w-72 aspect-2/3 rounded-2xl bg-white/5 mr-8" />
-        <View className="flex-1 pt-4">
-          <View className="h-4 w-32 rounded bg-white/5 mb-4" />
-          <View className="h-12 w-3/4 rounded bg-white/5 mb-4" />
-          <View className="h-8 w-1/2 rounded bg-white/5 mb-4" />
-          <View className="h-6 w-48 rounded bg-white/5 mb-4" />
-          <View className="h-6 w-64 rounded bg-white/5 mb-4" />
-          <View className="h-10 w-80 rounded bg-white/5 mb-4" />
-          <View className="h-32 w-full rounded bg-white/5" />
-        </View>
-      </View>
-    </ScrollView>
-  )
-}
 
 export function MoviePage({ id }: { id: string }) {
   const router = useRouter()
@@ -105,131 +94,91 @@ export function MoviePage({ id }: { id: string }) {
   }
 
   if (loading) {
-    return <MoviePageSkeleton />
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Spinner />
+      </div>
+    )
   }
 
   if (error || !movie) {
     return (
-      <View className="flex-1 items-center justify-center p-8">
+      <div className="flex flex-col items-center justify-center min-h-screen gap-6 p-8">
         <Text className="text-red-400 text-lg">
           {error || 'Фильм не найден'}
         </Text>
-        <Pressable className="mt-6 rounded-full bg-white/8 border border-white/10 px-5 py-3" onPress={() => router.back()}>
-          <Text className="text-zinc-100 font-medium">{'← Назад'}</Text>
-        </Pressable>
-      </View>
+        <Button variant="secondary" onClick={() => router.back()}>
+          ← Назад
+        </Button>
+      </div>
     )
   }
 
   const backdropUrl = movie.backdropUrl || getBackdropUrl(movie.id)
+  const posterUrl = getPosterUrl(movie.posterUrl)
   const yearText = movie.year ? String(movie.year) : ''
   const metaParts = [yearText, movie.country].filter(Boolean)
   const metaLine = metaParts.length > 0 ? metaParts.join(' • ') : ''
 
+  const primaryPlayer = players[0]
+
   return (
-    <View className="flex-1">
-      {backdropUrl ? (
-        <Image
-          source={{ uri: backdropUrl }}
-          blurRadius={40}
-          className="absolute inset-0 w-full h-full"
-          style={{ opacity: 0.3 }}
-        />
-      ) : null}
+    <div className="min-h-screen bg-black">
+      <HeroBanner
+        title={movie.title}
+        tagline={
+          movie.originalTitle && movie.originalTitle !== movie.title
+            ? movie.originalTitle
+            : undefined
+        }
+        meta={metaLine}
+        rating={movie.rating}
+        backdrop={backdropUrl}
+        poster={posterUrl}
+        primaryActionLabel="Смотреть"
+        onPrimaryAction={() => handleOpenPlayer(primaryPlayer)}
+        secondaryActionLabel="Ещё плееры"
+      />
 
-      <ScrollView className="flex-1">
-        <View>
-          <Pressable className="m-4 rounded-full bg-white/8 border border-white/10 px-5 py-2 self-start" onPress={() => router.back()}>
-            <Text className="text-zinc-100 font-medium">{'← Назад'}</Text>
-          </Pressable>
+      <Section className="px-8 py-6">
+        <div className="flex flex-wrap gap-2 mb-6">
+          {movie.rating ? (
+            <Badge tone="warning">{movie.rating.toFixed(1)}</Badge>
+          ) : null}
+          <Badge>{movie.type === 'tv' ? 'Сериал' : 'Фильм'}</Badge>
+          {movie.duration ? (
+            <Badge>{Math.round(movie.duration / 60) + ' мин'}</Badge>
+          ) : null}
+          {movie.genres?.map((g) => (
+            <Badge key={g.id}>{g.name}</Badge>
+          ))}
+        </div>
 
-          <View className="flex-row px-8 pb-8">
-            <View className="w-72 rounded-3xl border border-white/10 bg-zinc-900 overflow-hidden mr-8">
-              <Image
-                source={{ uri: getPosterUrl(movie.posterUrl) }}
-                className="w-72 aspect-2/3"
-                resizeMode="cover"
-              />
-            </View>
+        <div className="flex flex-wrap gap-3 mb-8">
+          {players.map((player) => (
+            <Button
+              key={player}
+              variant="secondary"
+              size="lg"
+              onClick={() => handleOpenPlayer(player)}
+            >
+              {PLAYER_LABELS[player]}
+            </Button>
+          ))}
+        </div>
 
-            <View className="flex-1 pt-4">
-              {metaLine ? (
-                <Text className="text-zinc-400 text-sm mb-4">{metaLine}</Text>
-              ) : null}
+        <Eyebrow>О фильме</Eyebrow>
+        <Text className="text-zinc-400 max-w-2xl mt-2 leading-relaxed">
+          {movie.description || 'Описание недоступно.'}
+        </Text>
+      </Section>
 
-              <Text className="text-5xl font-black tracking-tighter text-white mb-4">
-                {movie.title}
-              </Text>
-
-              {movie.originalTitle && movie.originalTitle !== movie.title ? (
-                <Text className="text-zinc-500 text-base mb-4">
-                  {movie.originalTitle}
-                </Text>
-              ) : null}
-
-              <View className="flex-row flex-wrap mb-6">
-                {movie.rating ? (
-                  <View className="rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 mr-2 mb-2">
-                    <Text className="text-amber-200 text-xs font-medium">
-                      {movie.rating.toFixed(1)}
-                    </Text>
-                  </View>
-                ) : null}
-                <View className="rounded-full border border-white/10 bg-white/5 px-3 py-1 mr-2 mb-2">
-                  <Text className="text-zinc-200 text-xs font-medium">
-                    {movie.type === 'tv' ? 'Сериал' : 'Фильм'}
-                  </Text>
-                </View>
-                {movie.duration ? (
-                  <View className="rounded-full border border-white/10 bg-white/5 px-3 py-1 mr-2 mb-2">
-                    <Text className="text-zinc-200 text-xs font-medium">
-                      {String(Math.round(movie.duration / 60)) + ' мин'}
-                    </Text>
-                  </View>
-                ) : null}
-                {movie.genres ? movie.genres.map((g) => (
-                  <View key={String(g.id)} className="rounded-full border border-white/7 bg-white/3 px-3 py-1 mr-2 mb-2">
-                    <Text className="text-zinc-500 text-xs font-medium">
-                      {g.name}
-                    </Text>
-                  </View>
-                )) : null}
-              </View>
-
-              <View className="flex-row flex-wrap mb-6">
-                {players.map((player) => (
-                  <Pressable
-                    key={player}
-                    className="rounded-2xl border border-white/10 bg-white/8 px-6 py-4 mr-3 mb-3"
-                    onPress={() => handleOpenPlayer(player)}
-                  >
-                    <Text className="text-white text-base font-bold">
-                      {PLAYER_LABELS[player]}
-                    </Text>
-                    <Text className="text-zinc-500 text-xs mt-1">
-                      {'Открыть источник'}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-
-              <Text className="text-zinc-500 text-xs font-bold tracking-widest uppercase mb-2">
-                {'О фильме'}
-              </Text>
-              <Text className="text-zinc-400 text-base leading-relaxed max-w-2xl">
-                {movie.description || 'Описание недоступно.'}
-              </Text>
-            </View>
-          </View>
-        </View>
-      </ScrollView>
-
-      {playerLoading ? (
-        <View className="absolute inset-0 z-40 bg-black/60 items-center justify-center">
-          <ActivityIndicator size="large" color="#fff" />
-          <Text className="text-white mt-3">{'Загружаем плеер...'}</Text>
-        </View>
-      ) : null}
+      {playerLoading && (
+        <div className="fixed inset-0 z-40 bg-black/60 flex items-center justify-center">
+          <Spinner />
+          <Text className="text-white mt-3 ml-2">Загружаем плеер...</Text>
+        </div>
+      )}
 
       {playerResult ? (
         <PlayerModal
@@ -239,6 +188,6 @@ export function MoviePage({ id }: { id: string }) {
           onClose={() => setPlayerModalOpen(false)}
         />
       ) : null}
-    </View>
+    </div>
   )
 }

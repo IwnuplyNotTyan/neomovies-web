@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.ts",
   "dependencies": {
+    "@neo-open-source/ui-web": "^0.3.5",
     "@neomovies/api-client": "workspace:*",
     "@neomovies/ui": "workspace:*",
     "expo": "~56.0.9",

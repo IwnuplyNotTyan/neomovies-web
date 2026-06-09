@@ -141,7 +141,7 @@ export function createApiClient(
     },
     async getMovieById(id: string | number) {
       const { data } = await client.get(`/api/v1/movie/${id}`);
-      return normalizeMovie(data);
+      return normalizeMovie(data.data ?? data);
     },
   };
 }
