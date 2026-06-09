@@ -1,7 +1,7 @@
 import { Stack } from 'expo-router'
 import { AppShell } from '@neomovies/ui'
 import '../global.css'
-import '../assets/neo-ui.css'
+import '@neo-open-source/ui-web/styles.css'
 
 export default function RootLayout() {
   return (
