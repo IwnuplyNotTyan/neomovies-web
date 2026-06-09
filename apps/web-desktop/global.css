@@ -3,3 +3,19 @@
 body {
   overflow-y: auto !important;
 }
+
+@media (max-width: 767px) {
+  .layout-desktop { display: none !important; }
+}
+
+@media (min-width: 768px) {
+  .layout-mobile { display: none !important; }
+  .layout-desktop {
+    display: flex !important;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 1280px;
+    gap: 2.5rem;
+    padding: 2.5rem 2rem;
+  }
+}

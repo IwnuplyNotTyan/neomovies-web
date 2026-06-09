@@ -114,116 +114,216 @@ export function MoviePage({ id }: { id: string }) {
   const metaParts = [yearText, movie.country].filter(Boolean)
   const metaLine = metaParts.length > 0 ? metaParts.join(' • ') : ''
 
+  const badgesSection = (
+    <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+      {movie.genres?.map((g) => (
+        <div key={g.id} style={{ marginRight: 8, marginBottom: 8 }}>
+          <Badge>{g.name}</Badge>
+        </div>
+      ))}
+      <div style={{ marginRight: 8, marginBottom: 8 }}>
+        <Badge>{movie.type === 'tv' ? 'Сериал' : 'Фильм'}</Badge>
+      </div>
+    </div>
+  )
+
+  const buttonsSection = (
+    <div style={{ display: 'flex', flexWrap: 'wrap', marginTop: 16 }}>
+      {players.map((player) => (
+        <div key={player} style={{ marginRight: 8, marginBottom: 8 }}>
+          <Button
+            variant="secondary"
+            size="lg"
+            onClick={() => handleOpenPlayer(player)}
+          >
+            {PLAYER_LABELS[player]}
+          </Button>
+        </div>
+      ))}
+    </div>
+  )
+
+  const descriptionSection = (
+    <>
+      <h2
+        style={{
+          fontSize: 24,
+          fontWeight: 800,
+          color: '#fff',
+          margin: 0,
+          marginBottom: 16,
+        }}
+      >
+        О фильме
+      </h2>
+      <p
+        style={{
+          color: 'rgba(255,255,255,0.9)',
+          fontSize: 17,
+          lineHeight: 1.7,
+          maxWidth: 700,
+          margin: 0,
+          marginBottom: 24,
+        }}
+      >
+        {movie.description || 'Описание недоступно.'}
+      </p>
+    </>
+  )
+
+  const playerSection = (
+    <>
+      {playerLoading && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 48,
+          }}
+        >
+          <Spinner />
+          <Text style={{ color: '#fff', marginLeft: 12 }}>
+            Загружаем плеер...
+          </Text>
+        </div>
+      )}
+
+      {playerResult && playerModalOpen && (
+        <div
+          style={{
+            width: '100%',
+            maxWidth: 1024,
+            aspectRatio: 16 / 9,
+            borderRadius: 12,
+            overflow: 'hidden',
+            marginBottom: 0,
+          }}
+        >
+          {playerResult.playerUrl && (
+            <iframe
+              src={playerResult.playerUrl}
+              allowFullScreen
+              allow="autoplay; fullscreen"
+              style={{
+                width: '100%',
+                height: '100%',
+                border: 0,
+              }}
+            />
+          )}
+          {playerResult.playerHtml && !playerResult.playerUrl && (
+            <div
+              dangerouslySetInnerHTML={{ __html: playerResult.playerHtml }}
+              style={{ width: '100%', height: '100%' }}
+            />
+          )}
+        </div>
+      )}
+    </>
+  )
+
   return (
     <div className="min-h-screen bg-black">
-      <HeroBanner
-        title={movie.title}
-        meta={metaLine}
-        rating={movie.rating}
-        backdrop={backdropUrl}
-        poster={posterUrl}
-      />
+      {/* Mobile layout */}
+      <div className="layout-mobile">
+        <HeroBanner
+          title={movie.title}
+          meta={metaLine}
+          rating={movie.rating}
+          backdrop={backdropUrl}
+          poster={posterUrl}
+        />
 
-      <div style={{ padding: '24px 32px 24px' }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-          {movie.genres?.map((g) => (
-            <div key={g.id} style={{ marginRight: 8, marginBottom: 8 }}>
-              <Badge>{g.name}</Badge>
-            </div>
-          ))}
-          <div style={{ marginRight: 8, marginBottom: 8 }}>
-            <Badge>{movie.type === 'tv' ? 'Сериал' : 'Фильм'}</Badge>
-          </div>
-
+        <div style={{ padding: '24px 32px 24px' }}>
+          {badgesSection}
+          {buttonsSection}
         </div>
 
-        <div style={{ display: 'flex', flexWrap: 'wrap', marginTop: 16 }}>
-          {players.map((player) => (
-            <div key={player} style={{ marginRight: 8, marginBottom: 8 }}>
-              <Button
-                variant="secondary"
-                size="lg"
-                onClick={() => handleOpenPlayer(player)}
-              >
-                {PLAYER_LABELS[player]}
-              </Button>
-            </div>
-          ))}
+        <div style={{ padding: '0 32px 32px' }}>
+          {descriptionSection}
+          {playerSection}
         </div>
       </div>
 
-      <div style={{ padding: '0 32px 32px' }}>
-        <h2
+      {/* Desktop layout */}
+      <div
+        className="layout-desktop"
+        style={{ alignItems: 'flex-start', padding: '32px 40px', minHeight: '100vh' }}
+      >
+        <div
           style={{
-            fontSize: 24,
-            fontWeight: 800,
-            color: '#fff',
-            margin: 0,
-            marginBottom: 16,
+            flexShrink: 0,
+            width: 340,
+            position: 'sticky',
+            top: 32,
+            alignSelf: 'flex-start',
           }}
         >
-          О фильме
-        </h2>
-        <p
-          style={{
-            color: 'rgba(255,255,255,0.9)',
-            fontSize: 17,
-            lineHeight: 1.7,
-            maxWidth: 700,
-            margin: 0,
-            marginBottom: 24,
-          }}
-        >
-          {movie.description || 'Описание недоступно.'}
-        </p>
-
-        {playerLoading && (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: 48,
-            }}
-          >
-            <Spinner />
-            <Text style={{ color: '#fff', marginLeft: 12 }}>
-              Загружаем плеер...
-            </Text>
-          </div>
-        )}
-
-        {playerResult && playerModalOpen && (
-          <div
+          <img
+            src={posterUrl}
+            alt={movie.title}
             style={{
               width: '100%',
-              maxWidth: 1024,
-              aspectRatio: 16 / 9,
               borderRadius: 12,
-              overflow: 'hidden',
-              marginBottom: 0,
+              display: 'block',
+            }}
+          />
+        </div>
+
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div
+            style={{
+              backgroundImage: `
+                radial-gradient(circle at top, rgba(255,255,255,0.08), transparent 50%),
+                linear-gradient(90deg, rgba(10,12,18,0.94) 0%, rgba(10,12,18,0.72) 45%, rgba(10,12,18,0.28) 100%),
+                linear-gradient(180deg, rgba(10,12,18,0.15) 0%, rgba(10,12,18,0.8) 100%),
+                url(${backdropUrl})
+              `.replace(/\s+/g, ' ').trim(),
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              borderRadius: 16,
+              padding: 32,
+              position: 'relative',
             }}
           >
-            {playerResult.playerUrl && (
-              <iframe
-                src={playerResult.playerUrl}
-                allowFullScreen
-                allow="autoplay; fullscreen"
+            <h1
+              style={{
+                fontSize: 32,
+                fontWeight: 800,
+                color: '#fff',
+                margin: 0,
+                marginBottom: 8,
+              }}
+            >
+              {movie.title}
+            </h1>
+            <div style={{ marginBottom: 4 }}>
+              <Badge>{movie.rating}</Badge>
+            </div>
+            {metaLine && (
+              <p
                 style={{
-                  width: '100%',
-                  height: '100%',
-                  border: 0,
+                  color: 'rgba(255,255,255,0.6)',
+                  fontSize: 15,
+                  margin: 0,
+                  marginTop: 4,
+                  marginBottom: 16,
                 }}
-              />
+              >
+                {metaLine}
+              </p>
             )}
-            {playerResult.playerHtml && !playerResult.playerUrl && (
-              <div
-                dangerouslySetInnerHTML={{ __html: playerResult.playerHtml }}
-                style={{ width: '100%', height: '100%' }}
-              />
-            )}
+
+            {badgesSection}
+            {buttonsSection}
           </div>
-        )}
+
+          <div style={{ marginTop: 32 }}>
+            {descriptionSection}
+            {playerSection}
+          </div>
+        </div>
       </div>
     </div>
   )
